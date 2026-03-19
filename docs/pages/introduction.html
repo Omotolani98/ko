@@ -1,0 +1,102 @@
+      <div class="page-badge"><span>&#9650;</span> Documentation</div>
+      <h1>Build distributed systems<span class="accent">.</span><br>Not infrastructure.</h1>
+      <p class="page-lead">
+        <strong>Ko&#x323;&#x301;</strong> is a Java 21+ framework for building <strong>type-safe distributed systems</strong>
+        with declarative infrastructure annotations. Inspired by Encore.dev, built on Spring Boot 3.x.
+        Your code is the source of truth &mdash; annotations replace YAML.
+      </p>
+
+      <div class="flow-diagram">
+        <div class="flow-label">How it works</div>
+        <div class="flow-row">
+          <div class="flow-box amber">Annotated Java Code</div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-box blue">Annotation Processor</div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-box purple">Application Model</div>
+        </div>
+        <div class="flow-arrow down">&darr;</div>
+        <div class="flow-row">
+          <div class="flow-box green">Runtime Engine</div>
+          <div class="flow-box green">CLI Tooling</div>
+          <div class="flow-box green">Dev Dashboard</div>
+          <div class="flow-box green">Code Generator</div>
+        </div>
+      </div>
+
+      <div class="prose">
+        <p>
+          With Ko&#x323;&#x301;, you annotate your Java code with <code>@KoService</code>, <code>@KoAPI</code>,
+          <code>@KoDatabase</code>, <code>@KoPubSub</code>, and other primitives. At compile time, an annotation
+          processor builds a complete <strong>Application Model</strong> &mdash; a JSON graph of every service,
+          endpoint, database, topic, and their relationships. The runtime engine reads this model and wires
+          infrastructure providers per environment.
+        </p>
+        <p>
+          <strong>No Docker Compose. No infrastructure YAML. No boilerplate.</strong>
+          Run <code>ko run</code> and your entire application starts with auto-provisioned local
+          infrastructure via Testcontainers.
+        </p>
+      </div>
+
+      <h3 class="sub-header"><span class="dot"></span> Why Ko&#x323;&#x301;?</h3>
+
+      <div class="card-grid">
+        <div class="card">
+          <div class="card-icon amber">&#9671;</div>
+          <h3>Declarative Infrastructure</h3>
+          <p>Annotate what you need &mdash; databases, caches, topics &mdash; and the framework provisions it. No Terraform or Helm for local dev.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon blue">&#9677;</div>
+          <h3>Compile-Time Safety</h3>
+          <p>The annotation processor validates cron expressions, API paths, naming conventions, and circular dependencies at build time, not runtime.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon green">&#9678;</div>
+          <h3>Zero-Config Local Dev</h3>
+          <p>One command spins up Postgres, Kafka, Redis &mdash; whatever your services declare. Testcontainers under the hood, no Docker Compose needed.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon purple">&#9670;</div>
+          <h3>Cloud-Agnostic</h3>
+          <p>Provider interfaces abstract AWS, GCP, and self-hosted. Same code runs locally, in Docker, or across clouds without changes.</p>
+        </div>
+      </div>
+
+      <h3 class="sub-header"><span class="dot"></span> A Taste of Ko&#x323;&#x301;</h3>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename">UserService.java</span>
+          <span class="code-lang">Java</span>
+        </div>
+        <pre><span class="ann">@KoService</span>(<span class="str">"user-service"</span>)
+<span class="kw">public class</span> <span class="type">UserService</span> {
+
+    <span class="ann">@KoDatabase</span>(name = <span class="str">"users"</span>)
+    <span class="kw">private</span> <span class="type">KoSQLDatabase</span> db;
+
+    <span class="ann">@KoPubSub</span>(topic = <span class="str">"user-registered"</span>)
+    <span class="kw">private</span> <span class="type">KoTopic</span>&lt;UserRegisteredEvent&gt; registeredTopic;
+
+    <span class="ann">@KoAPI</span>(method = <span class="str">"POST"</span>, path = <span class="str">"/users"</span>)
+    <span class="kw">public</span> <span class="type">UserResponse</span> <span class="fn">createUser</span>(<span class="type">CreateUserRequest</span> req) {
+        <span class="type">User</span> user = db.<span class="fn">exec</span>(conn -&gt;
+            conn.<span class="fn">insertReturning</span>(
+                <span class="str">"INSERT INTO users (name, email) VALUES (?, ?)"</span>,
+                req.name(), req.email()
+            )
+        );
+        registeredTopic.<span class="fn">publish</span>(<span class="kw">new</span> <span class="type">UserRegisteredEvent</span>(user.id()));
+        <span class="kw">return</span> UserResponse.<span class="fn">from</span>(user);
+    }
+
+    <span class="ann">@KoAPI</span>(method = <span class="str">"GET"</span>, path = <span class="str">"/users/:id"</span>)
+    <span class="kw">public</span> <span class="type">UserResponse</span> <span class="fn">getUser</span>(<span class="ann">@PathParam</span>(<span class="str">"id"</span>) <span class="type">String</span> id) {
+        <span class="kw">return</span> db.<span class="fn">queryOne</span>(<span class="str">"SELECT * FROM users WHERE id = ?"</span>, id)
+            .<span class="fn">map</span>(UserResponse::<span class="fn">from</span>)
+            .<span class="fn">orElseThrow</span>(() -&gt; <span class="type">KoError</span>.<span class="fn">notFound</span>(<span class="str">"User not found"</span>));
+    }
+}</pre>
+      </div>

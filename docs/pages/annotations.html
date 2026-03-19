@@ -1,0 +1,34 @@
+      <div class="page-badge"><span>&#64;</span> Reference</div>
+      <h1>Annotation Reference<span class="accent">.</span></h1>
+      <p class="page-lead">
+        Complete reference for all Ko&#x323;&#x301; annotations.
+      </p>
+
+      <table class="mapping-table">
+        <thead>
+          <tr><th>Annotation</th><th>Target</th><th>Purpose</th><th>Key Attributes</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>@KoService</td><td>Type</td><td>Declares a microservice boundary</td><td>value (name)</td></tr>
+          <tr><td>@KoAPI</td><td>Method</td><td>Declares an HTTP endpoint</td><td>method, path, auth, permissions, expose</td></tr>
+          <tr><td>@KoDatabase</td><td>Field</td><td>Declares a SQL database</td><td>name, migrations</td></tr>
+          <tr><td>@KoPubSub</td><td>Field</td><td>Declares a message topic</td><td>topic, delivery</td></tr>
+          <tr><td>@KoSubscribe</td><td>Method</td><td>Subscribes to a topic</td><td>topic, name, maxRetries, deadLetter</td></tr>
+          <tr><td>@KoCache</td><td>Field</td><td>Declares a key-value cache</td><td>name, keyType, ttl</td></tr>
+          <tr><td>@KoCron</td><td>Method</td><td>Declares a scheduled job</td><td>schedule, name</td></tr>
+          <tr><td>@KoBucket</td><td>Field</td><td>Declares object storage</td><td>name, publicRead</td></tr>
+          <tr><td>@KoSecret</td><td>Field</td><td>Declares an application secret</td><td>value (name)</td></tr>
+          <tr><td>@KoServiceClient</td><td>Field</td><td>Injects a generated service client</td><td>value (service name)</td></tr>
+          <tr><td>@PathParam</td><td>Parameter</td><td>Binds a path parameter</td><td>value (param name)</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Retention Policy</h2>
+
+      <div class="prose">
+        <p>
+          All Ko&#x323;&#x301; annotations use <code>@Retention(RUNTIME)</code> so they are available
+          both at compile time (for the annotation processor) and at runtime (for the Spring Boot
+          auto-configuration engine).
+        </p>
+      </div>

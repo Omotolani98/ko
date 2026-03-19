@@ -1,0 +1,2145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kọ́ — Documentation</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap');
+
+  :root {
+    --bg: #0a0a0f;
+    --bg-surface: #12121a;
+    --bg-elevated: #1a1a26;
+    --bg-hover: #22222f;
+    --border: #2a2a3a;
+    --border-accent: #3d3d55;
+    --text: #e8e8f0;
+    --text-muted: #8888a0;
+    --text-dim: #5a5a72;
+    --accent: #f59e0b;
+    --accent-dim: #b45309;
+    --accent-glow: rgba(245, 158, 11, 0.15);
+    --green: #34d399;
+    --green-dim: #065f46;
+    --blue: #60a5fa;
+    --blue-dim: #1e3a5f;
+    --purple: #a78bfa;
+    --purple-dim: #4c1d95;
+    --red: #f87171;
+    --red-dim: #7f1d1d;
+    --cyan: #22d3ee;
+    --orange: #fb923c;
+    --sidebar-w: 260px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* ── Layout ── */
+  .layout {
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: var(--sidebar-w);
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    background: var(--bg-surface);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+    transition: transform 0.3s ease;
+  }
+
+  .sidebar-header {
+    padding: 1.5rem 1.25rem 1rem;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .sidebar-logo {
+    font-size: 1.5rem;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+  }
+
+  .sidebar-logo .dot { color: var(--accent); }
+
+  .sidebar-version {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+    margin-top: 0.15rem;
+    letter-spacing: 0.05em;
+  }
+
+  .sidebar-nav {
+    padding: 1rem 0;
+    flex: 1;
+  }
+
+  .sidebar-group {
+    margin-bottom: 0.5rem;
+  }
+
+  .sidebar-group-title {
+    padding: 0.35rem 1.25rem;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+  }
+
+  .sidebar-link {
+    display: block;
+    padding: 0.4rem 1.25rem 0.4rem 1.75rem;
+    font-size: 0.84rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-weight: 400;
+    transition: all 0.15s;
+    border-left: 2px solid transparent;
+    cursor: pointer;
+  }
+
+  .sidebar-link:hover {
+    color: var(--text);
+    background: var(--bg-hover);
+  }
+
+  .sidebar-link.active {
+    color: var(--accent);
+    border-left-color: var(--accent);
+    background: var(--accent-glow);
+  }
+
+  /* ── Main ── */
+  .main {
+    flex: 1;
+    margin-left: var(--sidebar-w);
+    min-width: 0;
+  }
+
+  /* ── Top bar ── */
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10, 10, 15, 0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 0.65rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .topbar-breadcrumb {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+
+  .topbar-breadcrumb span { color: var(--text-dim); }
+  .topbar-breadcrumb strong { color: var(--text); font-weight: 600; }
+
+  .topbar-actions {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+  }
+
+  .topbar-search {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.85rem;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+
+  .topbar-search:hover { border-color: var(--border-accent); }
+
+  .topbar-kbd {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    padding: 0.1rem 0.4rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text-dim);
+  }
+
+  .github-link {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.82rem;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+
+  .github-link:hover { color: var(--text); }
+
+  /* ── Content ── */
+  .content {
+    max-width: 860px;
+    padding: 2.5rem 3rem 6rem;
+  }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .page-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.3rem 0.85rem;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin-bottom: 1.25rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .page-badge span { color: var(--accent); }
+
+  h1 {
+    font-size: 2.8rem;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin-bottom: 1rem;
+  }
+
+  h1 .accent { color: var(--accent); }
+
+  .page-lead {
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    max-width: 640px;
+    font-weight: 300;
+    line-height: 1.8;
+    margin-bottom: 2.5rem;
+  }
+
+  .page-lead strong { color: var(--text); font-weight: 500; }
+
+  h2 {
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin: 3rem 0 0.5rem;
+  }
+
+  h2:first-child { margin-top: 0; }
+
+  h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 2rem 0 0.5rem;
+    letter-spacing: -0.01em;
+  }
+
+  .sub-header {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 2.5rem 0 0.75rem;
+    letter-spacing: -0.01em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .sub-header .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+
+  /* ── Prose ── */
+  .prose {
+    font-family: 'Source Serif 4', serif;
+    font-size: 0.95rem;
+    line-height: 1.85;
+    color: var(--text-muted);
+    max-width: 720px;
+    margin-bottom: 1.5rem;
+  }
+
+  .prose strong { color: var(--text); font-weight: 600; }
+
+  .prose code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    background: var(--bg-elevated);
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+  }
+
+  .prose a {
+    color: var(--accent);
+    text-decoration: none;
+    border-bottom: 1px solid var(--accent-dim);
+    transition: border-color 0.2s;
+  }
+
+  .prose a:hover { border-bottom-color: var(--accent); }
+
+  .prose ul, .prose ol {
+    margin: 0.75rem 0 0.75rem 1.5rem;
+  }
+
+  .prose li {
+    margin-bottom: 0.35rem;
+  }
+
+  .prose p + p { margin-top: 1rem; }
+
+  /* ── Cards ── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1.5rem 0;
+  }
+
+  .card-grid.single { grid-template-columns: 1fr; }
+  .card-grid.triple { grid-template-columns: 1fr 1fr 1fr; }
+
+  .card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: border-color 0.2s;
+  }
+
+  .card:hover { border-color: var(--border-accent); }
+
+  .card-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+    font-weight: 700;
+  }
+
+  .card-icon.amber { background: var(--accent-glow); color: var(--accent); border: 1px solid var(--accent-dim); }
+  .card-icon.green { background: rgba(52, 211, 153, 0.1); color: var(--green); border: 1px solid var(--green-dim); }
+  .card-icon.blue { background: rgba(96, 165, 250, 0.1); color: var(--blue); border: 1px solid var(--blue-dim); }
+  .card-icon.purple { background: rgba(167, 139, 250, 0.1); color: var(--purple); border: 1px solid var(--purple-dim); }
+  .card-icon.red { background: rgba(248, 113, 113, 0.1); color: var(--red); border: 1px solid var(--red-dim); }
+
+  .card h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+    margin-top: 0;
+    letter-spacing: -0.01em;
+  }
+
+  .card p {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+    font-weight: 300;
+  }
+
+  .card .tech-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 0.75rem;
+  }
+
+  .tech-tag {
+    display: inline-block;
+    padding: 0.15rem 0.55rem;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-muted);
+    letter-spacing: 0.02em;
+  }
+
+  /* ── Code blocks ── */
+  .code-block {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin: 1.25rem 0;
+    overflow: hidden;
+  }
+
+  .code-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem 1rem;
+    background: var(--bg-elevated);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .code-filename {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+
+  .code-lang {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  pre {
+    padding: 1.25rem;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    line-height: 1.7;
+    color: var(--text);
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  .kw { color: var(--purple); }
+  .str { color: var(--green); }
+  .ann { color: var(--accent); }
+  .cmt { color: var(--text-dim); font-style: italic; }
+  .type { color: var(--cyan); }
+  .fn { color: var(--blue); }
+  .num { color: var(--orange); }
+
+  /* ── Flow diagram ── */
+  .flow-diagram {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2rem;
+    margin: 2rem 0;
+    overflow-x: auto;
+  }
+
+  .flow-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin: 0.75rem 0;
+    flex-wrap: nowrap;
+  }
+
+  .flow-box {
+    padding: 0.65rem 1.1rem;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    white-space: nowrap;
+    text-align: center;
+    min-width: 120px;
+    border: 1px solid;
+  }
+
+  .flow-box.amber { background: var(--accent-glow); color: var(--accent); border-color: var(--accent-dim); }
+  .flow-box.green { background: rgba(52, 211, 153, 0.08); color: var(--green); border-color: var(--green-dim); }
+  .flow-box.blue { background: rgba(96, 165, 250, 0.08); color: var(--blue); border-color: var(--blue-dim); }
+  .flow-box.purple { background: rgba(167, 139, 250, 0.08); color: var(--purple); border-color: var(--purple-dim); }
+  .flow-box.red { background: rgba(248, 113, 113, 0.08); color: var(--red); border-color: var(--red-dim); }
+
+  .flow-arrow {
+    color: var(--text-dim);
+    font-size: 1.2rem;
+    font-weight: 300;
+    flex-shrink: 0;
+  }
+
+  .flow-arrow.down {
+    display: flex;
+    justify-content: center;
+    font-size: 1.4rem;
+  }
+
+  .flow-label {
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin: 0.25rem 0;
+  }
+
+  /* ── Table ── */
+  .mapping-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+    font-size: 0.85rem;
+  }
+
+  .mapping-table th {
+    text-align: left;
+    padding: 0.75rem 1rem;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+  }
+
+  .mapping-table td {
+    padding: 0.65rem 1rem;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-weight: 300;
+  }
+
+  .mapping-table td:first-child {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--accent);
+  }
+
+  .mapping-table tr:hover td { background: var(--bg-surface); }
+
+  /* ── Callout ── */
+  .callout {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 10px 10px 0;
+    padding: 1.15rem 1.25rem;
+    margin: 1.5rem 0;
+  }
+
+  .callout.info { border-left-color: var(--blue); }
+  .callout.warn { border-left-color: var(--orange); }
+  .callout.tip { border-left-color: var(--green); }
+
+  .callout-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.35rem;
+    color: var(--accent);
+  }
+
+  .callout.info .callout-title { color: var(--blue); }
+  .callout.warn .callout-title { color: var(--orange); }
+  .callout.tip .callout-title { color: var(--green); }
+
+  .callout p {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+    font-weight: 300;
+  }
+
+  .callout code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    background: var(--bg-elevated);
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+  }
+
+  /* ── Steps ── */
+  .steps {
+    margin: 1.5rem 0;
+    counter-reset: step-counter;
+  }
+
+  .step {
+    position: relative;
+    padding: 1.25rem 1.25rem 1.25rem 3.5rem;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 0.75rem;
+    counter-increment: step-counter;
+  }
+
+  .step::before {
+    content: counter(step-counter);
+    position: absolute;
+    left: 1.15rem;
+    top: 1.25rem;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: var(--accent-glow);
+    border: 1px solid var(--accent-dim);
+    color: var(--accent);
+    font-size: 0.72rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .step h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+  }
+
+  .step p {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+    font-weight: 300;
+  }
+
+  /* ── Hero (landing) ── */
+  .hero {
+    padding: 4rem 0 2rem;
+    position: relative;
+  }
+
+  .hero::after {
+    content: '';
+    position: absolute;
+    top: -2rem; left: 50%;
+    transform: translateX(-50%);
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .hero-content { position: relative; z-index: 1; }
+
+  /* ── Mobile ── */
+  .mobile-toggle {
+    display: none;
+    position: fixed;
+    bottom: 1.25rem;
+    right: 1.25rem;
+    z-index: 300;
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: none;
+    color: var(--bg);
+    font-size: 1.2rem;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(245, 158, 11, 0.3);
+  }
+
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 190;
+  }
+
+  @media (max-width: 900px) {
+    .sidebar { transform: translateX(-100%); }
+    .sidebar.open { transform: translateX(0); }
+    .sidebar-overlay.open { display: block; }
+    .main { margin-left: 0; }
+    .mobile-toggle { display: flex; align-items: center; justify-content: center; }
+    .content { padding: 2rem 1.25rem 4rem; }
+    h1 { font-size: 2rem; }
+    .card-grid, .card-grid.triple { grid-template-columns: 1fr; }
+    .flow-row { flex-wrap: wrap; }
+    .topbar { padding: 0.65rem 1.25rem; }
+  }
+
+  @media (max-width: 480px) {
+    .content { padding: 1.5rem 1rem 4rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">Ko&#x323;&#x301;<span class="dot">.</span></div>
+    <div class="sidebar-version">v0.1.0-SNAPSHOT</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="sidebar-group">
+      <div class="sidebar-group-title">Getting Started</div>
+      <a class="sidebar-link active" data-page="introduction">Introduction</a>
+      <a class="sidebar-link" data-page="quickstart">Quickstart</a>
+      <a class="sidebar-link" data-page="installation">Installation</a>
+    </div>
+    <div class="sidebar-group">
+      <div class="sidebar-group-title">Core Concepts</div>
+      <a class="sidebar-link" data-page="services">Services</a>
+      <a class="sidebar-link" data-page="apis">APIs &amp; Endpoints</a>
+      <a class="sidebar-link" data-page="app-model">Application Model</a>
+    </div>
+    <div class="sidebar-group">
+      <div class="sidebar-group-title">Infrastructure</div>
+      <a class="sidebar-link" data-page="databases">Databases</a>
+      <a class="sidebar-link" data-page="pubsub">Pub/Sub</a>
+      <a class="sidebar-link" data-page="caching">Caching</a>
+      <a class="sidebar-link" data-page="cron">Cron Jobs</a>
+      <a class="sidebar-link" data-page="storage">Object Storage</a>
+      <a class="sidebar-link" data-page="secrets">Secrets</a>
+    </div>
+    <div class="sidebar-group">
+      <div class="sidebar-group-title">Advanced</div>
+      <a class="sidebar-link" data-page="service-calls">Service-to-Service Calls</a>
+      <a class="sidebar-link" data-page="testing">Testing</a>
+      <a class="sidebar-link" data-page="configuration">Configuration</a>
+    </div>
+    <div class="sidebar-group">
+      <div class="sidebar-group-title">Reference</div>
+      <a class="sidebar-link" data-page="annotations">Annotation Reference</a>
+      <a class="sidebar-link" data-page="cli-ref">CLI Reference</a>
+      <a class="sidebar-link" data-page="architecture">Architecture</a>
+    </div>
+  </nav>
+</aside>
+
+<button class="mobile-toggle" id="mobileToggle">&#9776;</button>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-breadcrumb">
+      <span>Docs</span> / <strong id="breadcrumb">Introduction</strong>
+    </div>
+    <div class="topbar-actions">
+      <div class="topbar-search">
+        Search docs...
+        <span class="topbar-kbd">&#8984;K</span>
+      </div>
+      <a class="github-link" href="https://github.com/nicholasadamou/ko" target="_blank">GitHub</a>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ═══════════════════════════════════════ -->
+    <!-- INTRODUCTION                           -->
+    <!-- ═══════════════════════════════════════ -->
+    <div class="page active" id="introduction">
+      <div class="hero">
+        <div class="hero-content">
+          <div class="page-badge"><span>&#9650;</span> Documentation</div>
+          <h1>Build distributed systems<span class="accent">.</span><br>Not infrastructure.</h1>
+          <p class="page-lead">
+            <strong>Ko&#x323;&#x301;</strong> is a Java 21+ framework for building <strong>type-safe distributed systems</strong>
+            with declarative infrastructure annotations. Inspired by Encore.dev, built on Spring Boot 3.x.
+            Your code is the source of truth &mdash; annotations replace YAML.
+          </p>
+        </div>
+      </div>
+
+      <div class="flow-diagram">
+        <div class="flow-label">How it works</div>
+        <div class="flow-row">
+          <div class="flow-box amber">Annotated Java Code</div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-box blue">Annotation Processor</div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-box purple">Application Model</div>
+        </div>
+        <div class="flow-arrow down">&darr;</div>
+        <div class="flow-row">
+          <div class="flow-box green">Runtime Engine</div>
+          <div class="flow-box green">CLI Tooling</div>
+          <div class="flow-box green">Dev Dashboard</div>
+          <div class="flow-box green">Code Generator</div>
+        </div>
+      </div>
+
+      <div class="prose">
+        <p>
+          With Ko&#x323;&#x301;, you annotate your Java code with <code>@KoService</code>, <code>@KoAPI</code>,
+          <code>@KoDatabase</code>, <code>@KoPubSub</code>, and other primitives. At compile time, an annotation
+          processor builds a complete <strong>Application Model</strong> &mdash; a JSON graph of every service,
+          endpoint, database, topic, and their relationships. The runtime engine reads this model and wires
+          infrastructure providers per environment.
+        </p>
+        <p>
+          <strong>No Docker Compose. No infrastructure YAML. No boilerplate.</strong>
+          Run <code>ko run</code> and your entire application starts with auto-provisioned local
+          infrastructure via Testcontainers.
+        </p>
+      </div>
+
+      <h3 class="sub-header"><span class="dot"></span> Why Ko&#x323;&#x301;?</h3>
+
+      <div class="card-grid">
+        <div class="card">
+          <div class="card-icon amber">&#9671;</div>
+          <h3>Declarative Infrastructure</h3>
+          <p>Annotate what you need &mdash; databases, caches, topics &mdash; and the framework provisions it. No Terraform or Helm for local dev.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon blue">&#9677;</div>
+          <h3>Compile-Time Safety</h3>
+          <p>The annotation processor validates cron expressions, API paths, naming conventions, and circular dependencies at build time, not runtime.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon green">&#9678;</div>
+          <h3>Zero-Config Local Dev</h3>
+          <p>One command spins up Postgres, Kafka, Redis &mdash; whatever your services declare. Testcontainers under the hood, no Docker Compose needed.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon purple">&#9670;</div>
+          <h3>Cloud-Agnostic</h3>
+          <p>Provider interfaces abstract AWS, GCP, and self-hosted. Same code runs locally, in Docker, or across clouds without changes.</p>
+        </div>
+      </div>
+
+      <h3 class="sub-header"><span class="dot"></span> A Taste of Ko&#x323;&#x301;</h3>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename">UserService.java</span>
+          <span class="code-lang">Java</span>
+        </div>
+        <pre><span class="ann">@KoService</span>(<span class="str">"user-service"</span>)
+<span class="kw">public class</span> <span class="type">UserService</span> {
+
+    <span class="ann">@KoDatabase</span>(name = <span class="str">"users"</span>)
+    <span class="kw">private</span> <span class="type">KoSQLDatabase</span> db;
+
+    <span class="ann">@KoPubSub</span>(topic = <span class="str">"user-registered"</span>)
+    <span class="kw">private</span> <span class="type">KoTopic</span>&lt;UserRegisteredEvent&gt; registeredTopic;
+
+    <span class="ann">@KoAPI</span>(method = <span class="str">"POST"</span>, path = <span class="str">"/users"</span>)
+    <span class="kw">public</span> <span class="type">UserResponse</span> <span class="fn">createUser</span>(<span class="type">CreateUserRequest</span> req) {
+        <span class="type">User</span> user = db.<span class="fn">exec</span>(conn -&gt;
+            conn.<span class="fn">insertReturning</span>(
+                <span class="str">"INSERT INTO users (name, email) VALUES (?, ?)"</span>,
+                req.name(), req.email()
+            )
+        );
+        registeredTopic.<span class="fn">publish</span>(<span class="kw">new</span> <span class="type">UserRegisteredEvent</span>(user.id()));
+        <span class="kw">return</span> UserResponse.<span class="fn">from</span>(user);
+    }
+
+    <span class="ann">@KoAPI</span>(method = <span class="str">"GET"</span>, path = <span class="str">"/users/:id"</span>)
+    <span class="kw">public</span> <span class="type">UserResponse</span> <span class="fn">getUser</span>(<span class="ann">@PathParam</span>(<span class="str">"id"</span>) <span class="type">String</span> id) {
+        <span class="kw">return</span> db.<span class="fn">queryOne</span>(<span class="str">"SELECT * FROM users WHERE id = ?"</span>, id)
+            .<span class="fn">map</span>(UserResponse::<span class="fn">from</span>)
+            .<span class="fn">orElseThrow</span>(() -&gt; <span class="type">KoError</span>.<span class="fn">notFound</span>(<span class="str">"User not found"</span>));
+    }
+}</pre>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════ -->
+    <!-- QUICKSTART                              -->
+    <!-- ═══════════════════════════════════════ -->
+    <div class="page" id="quickstart">
+      <div class="page-badge"><span>&#9654;</span> Getting Started</div>
+      <h1>Quickstart<span class="accent">.</span></h1>
+      <p class="page-lead">
+        Get a Ko&#x323;&#x301; service running in under five minutes. You'll define a service,
+        add an API endpoint and a database, then watch the framework wire everything together.
+      </p>
+
+      <div class="steps">
+        <div class="step">
+          <h4>Create a new Gradle project</h4>
+          <p>Use the standard Gradle init or your IDE to scaffold a Java 21 project.</p>
+        </div>
+        <div class="step">
+          <h4>Apply the Ko&#x323;&#x301; Gradle plugin</h4>
+          <p>The plugin adds annotation processing and model generation to your build.</p>
+        </div>
+        <div class="step">
+          <h4>Define your first service</h4>
+          <p>Annotate a class with <code>@KoService</code> and add methods with <code>@KoAPI</code>.</p>
+        </div>
+        <div class="step">
+          <h4>Build and inspect the model</h4>
+          <p>Run <code>./gradlew build</code> and find <code>ko-app-model.json</code> in your build output.</p>
+        </div>
+      </div>
+
+      <h2>1. Apply the plugin</h2>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename">build.gradle.kts</span>
+          <span class="code-lang">Kotlin DSL</span>
+        </div>
+        <pre><span class="kw">plugins</span> {
+    <span class="fn">id</span>(<span class="str">"dev.ko"</span>)
+}
+
+<span class="fn">ko</span> {
+    appName.<span class="fn">set</span>(<span class="str">"my-app"</span>)
+}
+
+<span class="kw">dependencies</span> {
+    <span class="fn">implementation</span>(<span class="str">"dev.ko:ko-annotations:0.1.0-SNAPSHOT"</span>)
+    <span class="fn">annotationProcessor</span>(<span class="str">"dev.ko:ko-processor:0.1.0-SNAPSHOT"</span>)
+}</pre>
+      </div>
+
+      <div class="callout tip">
+        <div class="callout-title">Tip</div>
+        <p>The Ko&#x323;&#x301; Gradle plugin automatically adds the annotation and processor dependencies, sets the <code>-parameters</code> compiler flag, and registers the model generation task.</p>
+      </div>
+
+      <h2>2. Write your first service</h2>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename">GreetingService.java</span>
+          <span class="code-lang">Java</span>
+        </div>
+        <pre><span class="kw">package</span> com.example;
+
+<span class="kw">import</span> dev.ko.annotations.*;
+
+<span class="ann">@KoService</span>(<span class="str">"greeting-service"</span>)
+<span class="kw">public class</span> <span class="type">GreetingService</span> {
+
+    <span class="cmt">/** Say hello to someone. */</span>
+    <span class="ann">@KoAPI</span>(method = <span class="str">"GET"</span>, path = <span class="str">"/hello/:name"</span>)
+    <span class="kw">public</span> <span class="type">GreetingResponse</span> <span class="fn">hello</span>(<span class="ann">@PathParam</span>(<span class="str">"name"</span>) <span class="type">String</span> name) {
+        <span class="kw">return new</span> <span class="type">GreetingResponse</span>(<span class="str">"Hello, "</span> + name + <span class="str">"!"</span>);
+    }
+}
+
+<span class="kw">public record</span> <span class="type">GreetingResponse</span>(<span class="type">String</span> message) {}</pre>
+      </div>
+
+      <h2>3. Build</h2>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename">Terminal</span>
+          <span class="code-lang">Shell</span>
+        </div>
+        <pre>$ ./gradlew build
+
+<span class="green">BUILD SUCCESSFUL</span>
+
+$ cat build/ko/ko-app-model.json</pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename">build/ko/ko-app-model.json</span>
+          <span class="code-lang">JSON</span>
+        </div>
+        <pre>{
+  <span class="str">"schema"</span>: <span class="str">"1.0"</span>,
+  <span class="str">"app"</span>: <span class="str">"my-app"</span>,
+  <span class="str">"services"</span>: [
+    {
+      <span class="str">"name"</span>: <span class="str">"greeting-service"</span>,
+      <span class="str">"class_name"</span>: <span class="str">"com.example.GreetingService"</span>,
+      <span class="str">"apis"</span>: [
+        {
+          <span class="str">"name"</span>: <span class="str">"hello"</span>,
+          <span class="str">"method"</span>: <span class="str">"GET"</span>,
+          <span class="str">"path"</span>: <span class="str">"/hello/:name"</span>,
+          <span class="str">"javadoc"</span>: <span class="str">"Say hello to someone."</span>,
+          <span class="str">"response_type"</span>: {
+            <span class="str">"class_name"</span>: <span class="str">"com.example.GreetingResponse"</span>,
+            <span class="str">"fields"</span>: [
+              { <span class="str">"name"</span>: <span class="str">"message"</span>, <span class="str">"type"</span>: <span class="str">"java.lang.String"</span> }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}</pre>
+      </div>
+
+      <div class="callout info">
+        <div class="callout-title">What just happened?</div>
+        <p>The annotation processor scanned your <code>@KoService</code> class at compile time, extracted the API endpoints, request/response types, and Javadoc, then serialized everything into a structured Application Model. This model is the foundation for runtime wiring, documentation generation, and the dev dashboard.</p>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════ -->
+    <!-- INSTALLATION                            -->
+    <!-- ═══════════════════════════════════════ -->
+    <div class="page" id="installation">
+      <div class="page-badge"><span>&#9881;</span> Getting Started</div>
+      <h1>Installation<span class="accent">.</span></h1>
+      <p class="page-lead">
+        Requirements and setup for using Ko&#x323;&#x301; in your Java project.
+      </p>
+
+      <h2>Requirements</h2>
+
+      <div class="card-grid triple">
+        <div class="card">
+          <div class="card-icon amber">&#9752;</div>
+          <h3>Java 21+</h3>
+          <p>Ko&#x323;&#x301; uses records, sealed interfaces, pattern matching, and virtual threads.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon green">&#9881;</div>
+          <h3>Gradle 8.12+</h3>
+          <p>The Ko&#x323;&#x301; Gradle plugin requires Gradle 8.12 or later with version catalogs support.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon blue">&#9638;</div>
+          <h3>Docker (optional)</h3>
+          <p>Required for <code>ko run</code> with Testcontainers. Not needed for compile-time features.</p>
+        </div>
+      </div>
+
+      <h2>Gradle Setup</h2>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename">settings.gradle.kts</span>
+          <span class="code-lang">Kotlin DSL</span>
+        </div>
+        <pre><span class="kw">pluginManagement</span> {
+    <span class="kw">repositories</span> {
+        <span class="fn">mavenCentral</span>()
+        <span class="fn">gradlePluginPortal</span>()
+    }
+}
+
+rootProject.name = <span class="str">"my-project"</span></pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename">build.gradle.kts</span>
+          <span class="code-lang">Kotlin DSL</span>
+        </div>
+        <pre><span class="kw">plugins</span> {
+    <span class="fn">id</span>(<span class="str">"dev.ko"</span>) <span class="fn">version</span> <span class="str">"0.1.0-SNAPSHOT"</span>
+}
+
+<span class="fn">ko</span> {
+    appName.<span class="fn">set</span>(<span class="str">"my-app"</span>)
+}
+
+<span class="kw">java</span> {
+    <span class="kw">toolchain</span> {
+        languageVersion.<span class="fn">set</span>(JavaLanguageVersion.<span class="fn">of</span>(<span class="num">21</span>))
+    }
+}</pre>
+      </div>
+
+      <h2>Version Catalog (optional)</h2>
+
+      <div class="prose">
+        <p>
+          If you manage dependencies via <code>gradle/libs.versions.toml</code>, add the Ko&#x323;&#x301;
+          entries alongside your other dependencies.
+        </p>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename">gradle/libs.versions.toml</span>
+          <span class="code-lang">TOML</span>
+        </div>
+        <pre><span class="kw">[versions]</span>
+ko = <span class="str">"0.1.0-SNAPSHOT"</span>
+
+<span class="kw">[libraries]</span>
+ko-annotations = { module = <span class="str">"dev.ko:ko-annotations"</span>, version.ref = <span class="str">"ko"</span> }
+ko-processor   = { module = <span class="str">"dev.ko:ko-processor"</span>,   version.ref = <span class="str">"ko"</span> }
+ko-runtime     = { module = <span class="str">"dev.ko:ko-runtime"</span>,     version.ref = <span class="str">"ko"</span> }
+ko-test        = { module = <span class="str">"dev.ko:ko-test"</span>,        version.ref = <span class="str">"ko"</span> }
+
+<span class="kw">[plugins]</span>
+ko = { id = <span class="str">"dev.ko"</span>, version.ref = <span class="str">"ko"</span> }</pre>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════ -->
+    <!-- SERVICES                                -->
+    <!-- ═══════════════════════════════════════ -->
+    <div class="page" id="services">
+      <div class="page-badge"><span>&#9632;</span> Core Concepts</div>
+      <h1>Services<span class="accent">.</span></h1>
+      <p class="page-lead">
+        A <strong>service</strong> is the fundamental unit of organization in Ko&#x323;&#x301;.
+        It represents a logical microservice boundary &mdash; a group of related APIs,
+        databases, and infrastructure that belong together.
+      </p>
+
+      <h2>Defining a Service</h2>
+
+      <div class="prose">
+        <p>
+          Annotate any class with <code>@KoService</code> to declare it as a service.
+          The value is a <strong>kebab-case name</strong> that uniquely identifies the service
+          across your application. This name appears in the Application Model, service discovery,
+          tracing, and the dev dashboard.
+        </p>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename">OrderService.java</span>
+          <span class="code-lang">Java</span>
+        </div>
+        <pre><span class="ann">@KoService</span>(<span class="str">"order-service"</span>)
+<span class="kw">public class</span> <span class="type">OrderService</span> {
+
+    <span class="ann">@KoDatabase</span>(name = <span class="str">"orders"</span>)
+    <span class="kw">private</span> <span class="type">KoSQLDatabase</span> db;
+
+    <span class="ann">@KoPubSub</span>(topic = <span class="str">"order-placed"</span>)
+    <span class="kw">private</span> <span class="type">KoTopic</span>&lt;OrderPlacedEvent&gt; orderTopic;
+
+    <span class="ann">@KoAPI</span>(method = <span class="str">"POST"</span>, path = <span class="str">"/orders"</span>, auth = <span class="kw">true</span>)
+    <span class="kw">public</span> <span class="type">OrderResponse</span> <span class="fn">placeOrder</span>(<span class="type">PlaceOrderRequest</span> req) {
+        <span class="cmt">// ...</span>
+    }
+
+    <span class="ann">@KoCron</span>(schedule = <span class="str">"0 */6 * * *"</span>, name = <span class="str">"expire-pending-orders"</span>)
+    <span class="kw">public void</span> <span class="fn">expirePendingOrders</span>() {
+        <span class="cmt">// ...</span>
+    }
+}</pre>
+      </div>
+
+      <h2>Naming Rules</h2>
+
+      <div class="prose">
+        <p>
+          Service names must follow <strong>kebab-case</strong> convention: lowercase letters and digits
+          separated by hyphens. The name is validated at compile time &mdash; invalid names fail the build.
+        </p>
+      </div>
+
+      <table class="mapping-table">
+        <thead>
+          <tr><th>Name</th><th>Valid?</th><th>Reason</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>user-service</td><td style="color: var(--green);">Yes</td><td>Kebab-case with letters</td></tr>
+          <tr><td>auth2</td><td style="color: var(--green);">Yes</td><td>Single word with digit</td></tr>
+          <tr><td>order-service-v2</td><td style="color: var(--green);">Yes</td><td>Multiple segments</td></tr>
+          <tr><td>UserService</td><td style="color: var(--red);">No</td><td>Uppercase not allowed</td></tr>
+          <tr><td>user_service</td><td style="color: var(--red);">No</td><td>Underscores not allowed</td></tr>
+          <tr><td>-service</td><td style="color: var(--red);">No</td><td>Cannot start with hyphen</td></tr>
+        </tbody>
+      </table>
+
+      <h2>What a Service Contains</h2>
+
+      <div class="card-grid triple">
+        <div class="card">
+          <div class="card-icon amber">&#8594;</div>
+          <h3>API Endpoints</h3>
+          <p>Methods annotated with <code>@KoAPI</code> &mdash; the HTTP surface of the service.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon blue">&#9707;</div>
+          <h3>Infrastructure</h3>
+          <p>Fields annotated with <code>@KoDatabase</code>, <code>@KoPubSub</code>, <code>@KoCache</code>, etc.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon green">&#8635;</div>
+          <h3>Background Work</h3>
+          <p>Cron jobs (<code>@KoCron</code>) and subscribers (<code>@KoSubscribe</code>).</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════ -->
+    <!-- APIS                                    -->
+    <!-- ═══════════════════════════════════════ -->
+    <div class="page" id="apis">
+      <div class="page-badge"><span>&#8596;</span> Core Concepts</div>
+      <h1>APIs &amp; Endpoints<span class="accent">.</span></h1>
+      <p class="page-lead">
+        Define type-safe HTTP endpoints with <code>@KoAPI</code>. Request and response types
+        are extracted from method signatures &mdash; no DTOs, no mapping, no boilerplate.
+      </p>
+
+      <h2>Basic API</h2>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename">ProductService.java</span>
+          <span class="code-lang">Java</span>
+        </div>
+        <pre><span class="cmt">/** List all products in the catalog. */</span>
+<span class="ann">@KoAPI</span>(method = <span class="str">"GET"</span>, path = <span class="str">"/products"</span>)
+<span class="kw">public</span> <span class="type">List</span>&lt;<span class="type">ProductResponse</span>&gt; <span class="fn">listProducts</span>() {
+    <span class="kw">return</span> db.<span class="fn">query</span>(<span class="str">"SELECT * FROM products"</span>)
+        .<span class="fn">stream</span>()
+        .<span class="fn">map</span>(ProductResponse::<span class="fn">from</span>)
+        .<span class="fn">toList</span>();
+}
+
+<span class="cmt">/** Create a new product. Requires authentication. */</span>
+<span class="ann">@KoAPI</span>(method = <span class="str">"POST"</span>, path = <span class="str">"/products"</span>, auth = <span class="kw">true</span>,
+       permissions = {<span class="str">"PRODUCT:CREATE"</span>})
+<span class="kw">public</span> <span class="type">ProductResponse</span> <span class="fn">createProduct</span>(<span class="type">CreateProductRequest</span> req) {
+    <span class="cmt">// Request body automatically deserialized from JSON</span>
+    <span class="cmt">// ...</span>
+}</pre>
+      </div>
+
+      <h2>Path Parameters</h2>
+
+      <div class="prose">
+        <p>
+          Use <code>:paramName</code> syntax in the path and annotate the corresponding
+          method parameter with <code>@PathParam</code>. The processor validates that every
+          path parameter has a matching method parameter.
+        </p>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename">Path parameters</span>
+          <span class="code-lang">Java</span>
+        </div>
+        <pre><span class="ann">@KoAPI</span>(method = <span class="str">"GET"</span>, path = <span class="str">"/products/:id"</span>)
+<span class="kw">public</span> <span class="type">ProductResponse</span> <span class="fn">getProduct</span>(<span class="ann">@PathParam</span>(<span class="str">"id"</span>) <span class="type">String</span> id) {
+    <span class="cmt">// ...</span>
+}
+
+<span class="ann">@KoAPI</span>(method = <span class="str">"PUT"</span>, path = <span class="str">"/products/:id/reviews/:reviewId"</span>)
+<span class="kw">public</span> <span class="type">ReviewResponse</span> <span class="fn">updateReview</span>(
+    <span class="ann">@PathParam</span>(<span class="str">"id"</span>) <span class="type">String</span> productId,
+    <span class="ann">@PathParam</span>(<span class="str">"reviewId"</span>) <span class="type">String</span> reviewId,
+    <span class="type">UpdateReviewRequest</span> req
+) {
+    <span class="cmt">// Non-path parameters are treated as the request body</span>
+}</pre>
+      </div>
+
+      <h2>Annotation Attributes</h2>
+
+      <table class="mapping-table">
+        <thead>
+          <tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>method</td><td>String</td><td><code>"GET"</code></td><td>HTTP method (GET, POST, PUT, DELETE, PATCH)</td></tr>
+          <tr><td>path</td><td>String</td><td>&mdash;</td><td>URL path with optional <code>:param</code> segments</td></tr>
+          <tr><td>auth</td><td>boolean</td><td><code>false</code></td><td>Whether authentication is required</td></tr>
+          <tr><td>permissions</td><td>String[]</td><td><code>{}</code></td><td>Required permissions (implies auth=true)</td></tr>
+          <tr><td>expose</td><td>boolean</td><td><code>true</code></td><td>Whether the endpoint is public or service-internal</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Request &amp; Response Types</h2>
+
+      <div class="prose">
+        <p>
+          Ko&#x323;&#x301; extracts type information from your method signatures. Use <strong>Java records</strong>
+          for request and response types &mdash; their fields are automatically included in the Application Model
+          and used to generate OpenAPI specs, TypeScript clients, and API documentation.
+        </p>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename">Request and response records</span>
+          <span class="code-lang">Java</span>
+        </div>
+        <pre><span class="kw">public record</span> <span class="type">CreateProductRequest</span>(
+    <span class="type">String</span> name,
+    <span class="type">String</span> description,
+    <span class="type">BigDecimal</span> price,
+    <span class="type">List</span>&lt;<span class="type">String</span>&gt; tags
+) {}
+
+<span class="kw">public record</span> <span class="type">ProductResponse</span>(
+    <span class="type">String</span> id,
+    <span class="type">String</span> name,
+    <span class="type">String</span> description,
+    <span class="type">BigDecimal</span> price,
+    <span class="type">Instant</span> createdAt
+) {
+    <span class="kw">public static</span> <span class="type">ProductResponse</span> <span class="fn">from</span>(<span class="type">Product</span> p) {
+        <span class="kw">return new</span> <span class="type">ProductResponse</span>(p.id(), p.name(), p.description(), p.price(), p.createdAt());
+    }
+}</pre>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════ -->
+    <!-- APP MODEL                               -->
+    <!-- ═══════════════════════════════════════ -->
+    <div class="page" id="app-model">
+      <div class="page-badge"><span>&#9733;</span> Core Concepts</div>
+      <h1>Application Model<span class="accent">.</span></h1>
+      <p class="page-lead">
+        The <strong>Application Model</strong> is the brain of Ko&#x323;&#x301; &mdash; a structured
+        JSON graph generated at compile time that captures every service, endpoint, database,
+        topic, and relationship in your application.
+      </p>
+
+      <div class="flow-diagram">
+        <div class="flow-label">The Application Model feeds every tool</div>
+        <div class="flow-row">
+          <div class="flow-box purple">ko-app-model.json</div>
+        </div>
+        <div class="flow-arrow down">&darr;</div>
+        <div class="flow-row">
+          <div class="flow-box green">Runtime<br>Engine</div>
+          <div class="flow-box blue">CLI<br>Tooling</div>
+          <div class="flow-box amber">Dev<br>Dashboard</div>
+          <div class="flow-box red">Code<br>Generator</div>
+        </div>
+      </div>
+
+      <h2>What It Contains</h2>
+
+      <div class="card-grid">
+        <div class="card">
+          <div class="card-icon amber">S</div>
+          <h3>Services</h3>
+          <p>Name, class, package, and all contained APIs, databases, pub/sub topics, caches, cron jobs, secrets, and buckets.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon blue">T</div>
+          <h3>Types</h3>
+          <p>Full field-level schema for every request and response record, including nested types.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon green">D</div>
+          <h3>Dependencies</h3>
+          <p>Service-to-service dependencies &mdash; API calls, shared pub/sub topics, and their direction.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon purple">I</div>
+          <h3>Infrastructure</h3>
+          <p>Aggregate list of all databases, pub/sub topics, caches, and other resources needed by the application.</p>
+        </div>
+      </div>
+
+      <h2>Schema Structure</h2>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename">ko-app-model.json (schema)</span>
+          <span class="code-lang">JSON</span>
+        </div>
+        <pre>{
+  <span class="str">"schema"</span>: <span class="str">"1.0"</span>,                  <span class="cmt">// Model schema version</span>
+  <span class="str">"version"</span>: <span class="str">"0.1.0-SNAPSHOT"</span>,     <span class="cmt">// App version</span>
+  <span class="str">"app"</span>: <span class="str">"my-app"</span>,                 <span class="cmt">// Application name</span>
+  <span class="str">"generated_at"</span>: <span class="str">"2026-..."</span>,      <span class="cmt">// ISO-8601 timestamp</span>
+  <span class="str">"services"</span>: [                    <span class="cmt">// All discovered services</span>
+    {
+      <span class="str">"name"</span>: <span class="str">"..."</span>,
+      <span class="str">"class_name"</span>: <span class="str">"..."</span>,
+      <span class="str">"package_name"</span>: <span class="str">"..."</span>,
+      <span class="str">"apis"</span>: [<span class="cmt">/* ApiEndpointModel[] */</span>],
+      <span class="str">"databases"</span>: [<span class="cmt">/* DatabaseModel[] */</span>],
+      <span class="str">"publishes"</span>: [<span class="cmt">/* topic names */</span>],
+      <span class="str">"subscribes"</span>: [<span class="cmt">/* topic names */</span>],
+      <span class="str">"caches"</span>: [<span class="cmt">/* CacheModel[] */</span>],
+      <span class="str">"cron_jobs"</span>: [<span class="cmt">/* CronJobModel[] */</span>],
+      <span class="str">"secrets"</span>: [<span class="cmt">/* SecretModel[] */</span>],
+      <span class="str">"buckets"</span>: [<span class="cmt">/* BucketModel[] */</span>]
+    }
+  ],
+  <span class="str">"pubsub_topics"</span>: [<span class="cmt">/* PubSubTopicModel[] */</span>],
+  <span class="str">"databases"</span>: [<span class="cmt">/* DatabaseModel[] */</span>],
+  <span class="str">"service_dependencies"</span>: [<span class="cmt">/* ServiceDependencyModel[] */</span>]
+}</pre>
+      </div>
+
+      <div class="callout">
+        <div class="callout-title">Design Principle</div>
+        <p>The Application Model uses <strong>snake_case</strong> for all JSON field names. This is configured via Jackson's <code>PropertyNamingStrategies.SNAKE_CASE</code> on the ObjectMapper, so Java records use standard camelCase field names while the JSON output is consistently snake_case.</p>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════ -->
+    <!-- DATABASES                               -->
+    <!-- ═══════════════════════════════════════ -->
+    <div class="page" id="databases">
+      <div class="page-badge"><span>&#9707;</span> Infrastructure</div>
+      <h1>Databases<span class="accent">.</span></h1>
+      <p class="page-lead">
+        Declare SQL databases with <code>@KoDatabase</code>. The framework provisions them
+        locally via Testcontainers and connects to managed instances in production.
+      </p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename">Declaring a database</span>
+          <span class="code-lang">Java</span>
+        </div>
+        <pre><span class="ann">@KoService</span>(<span class="str">"inventory-service"</span>)
+<span class="kw">public class</span> <span class="type">InventoryService</span> {
+
+    <span class="ann">@KoDatabase</span>(name = <span class="str">"inventory"</span>, migrations = <span class="str">"migrations/inventory"</span>)
+    <span class="kw">private</span> <span class="type">KoSQLDatabase</span> db;
+
+    <span class="ann">@KoAPI</span>(method = <span class="str">"GET"</span>, path = <span class="str">"/stock/:sku"</span>)
+    <span class="kw">public</span> <span class="type">StockResponse</span> <span class="fn">getStock</span>(<span class="ann">@PathParam</span>(<span class="str">"sku"</span>) <span class="type">String</span> sku) {
+        <span class="kw">return</span> db.<span class="fn">queryOne</span>(
+            <span class="str">"SELECT * FROM stock WHERE sku = ?"</span>, sku
+        ).<span class="fn">map</span>(StockResponse::<span class="fn">from</span>)
+         .<span class="fn">orElseThrow</span>(() -&gt; <span class="type">KoError</span>.<span class="fn">notFound</span>(<span class="str">"SKU not found"</span>));
+    }
+}</pre>
+      </div>
+
+      <h2>Annotation Attributes</h2>
+
+      <table class="mapping-table">
+        <thead>
+          <tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>name</td><td>String</td><td>&mdash;</td><td>Unique database name (kebab-case)</td></tr>
+          <tr><td>migrations</td><td>String</td><td><code>"migrations"</code></td><td>Path to SQL migration files relative to the service</td></tr>
+        </tbody>
+      </table>
+
+      <h2>How It Works</h2>
+
+      <div class="flow-diagram">
+        <div class="flow-row">
+          <div class="flow-box amber">@KoDatabase</div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-box blue">App Model</div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-box purple">Runtime resolves</div>
+        </div>
+        <div class="flow-arrow down">&darr;</div>
+        <div class="flow-label">Based on environment</div>
+        <div class="flow-row">
+          <div class="flow-box green">Local: Testcontainers PostgreSQL</div>
+          <div class="flow-box red">Prod: HikariCP &rarr; Cloud SQL / RDS</div>
+        </div>
+      </div>
+
+      <div class="callout tip">
+        <div class="callout-title">Tip</div>
+        <p>Each <code>@KoDatabase</code> gets its own connection pool in production. Locally, the CLI reads the Application Model, sees which databases are needed, and spins up exactly those Testcontainer instances.</p>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════ -->
+    <!-- PUBSUB                                  -->
+    <!-- ═══════════════════════════════════════ -->
+    <div class="page" id="pubsub">
+      <div class="page-badge"><span>&#8644;</span> Infrastructure</div>
+      <h1>Pub/Sub<span class="accent">.</span></h1>
+      <p class="page-lead">
+        Declare message topics with <code>@KoPubSub</code> and subscribe with <code>@KoSubscribe</code>.
+        The framework handles serialization, delivery guarantees, retries, and dead-letter queues.
+      </p>
+
+      <h2>Publishing</h2>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename">Publishing events</span>
+          <span class="code-lang">Java</span>
+        </div>
+        <pre><span class="ann">@KoPubSub</span>(topic = <span class="str">"order-placed"</span>, delivery = DeliveryGuarantee.AT_LEAST_ONCE)
+<span class="kw">private</span> <span class="type">KoTopic</span>&lt;OrderPlacedEvent&gt; orderTopic;
+
+<span class="cmt">// Later in your code...</span>
+orderTopic.<span class="fn">publish</span>(<span class="kw">new</span> <span class="type">OrderPlacedEvent</span>(order.id(), order.total()));</pre>
+      </div>
+
+      <h2>Subscribing</h2>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename">Subscribing to events</span>
+          <span class="code-lang">Java</span>
+        </div>
+        <pre><span class="ann">@KoSubscribe</span>(topic = <span class="str">"order-placed"</span>, name = <span class="str">"send-confirmation"</span>,
+             maxRetries = <span class="num">5</span>, deadLetter = <span class="kw">true</span>)
+<span class="kw">public void</span> <span class="fn">onOrderPlaced</span>(<span class="type">OrderPlacedEvent</span> event) {
+    emailService.<span class="fn">sendConfirmation</span>(event.orderId());
+}</pre>
+      </div>
+
+      <h2>Delivery Guarantees</h2>
+
+      <table class="mapping-table">
+        <thead>
+          <tr><th>Guarantee</th><th>Behavior</th><th>Use Case</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>AT_LEAST_ONCE</td><td>Message delivered one or more times. Subscriber must be idempotent.</td><td>Most use cases (default)</td></tr>
+          <tr><td>AT_MOST_ONCE</td><td>Message delivered zero or one times. May be lost on failure.</td><td>Analytics, non-critical notifications</td></tr>
+          <tr><td>EXACTLY_ONCE</td><td>Message delivered exactly once (transactional where supported).</td><td>Financial transactions, inventory</td></tr>
+        </tbody>
+      </table>
+
+      <h2>@KoSubscribe Attributes</h2>
+
+      <table class="mapping-table">
+        <thead>
+          <tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>topic</td><td>String</td><td>&mdash;</td><td>Topic name to subscribe to</td></tr>
+          <tr><td>name</td><td>String</td><td>method name</td><td>Subscription name (for consumer group identity)</td></tr>
+          <tr><td>maxRetries</td><td>int</td><td>3</td><td>Max retry attempts before dead-lettering</td></tr>
+          <tr><td>deadLetter</td><td>boolean</td><td>true</td><td>Whether to use a dead-letter queue</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ═══════════════════════════════════════ -->
+    <!-- CACHING                                 -->
+    <!-- ═══════════════════════════════════════ -->
+    <div class="page" id="caching">
+      <div class="page-badge"><span>&#9889;</span> Infrastructure</div>
+      <h1>Caching<span class="accent">.</span></h1>
+      <p class="page-lead">
+        Declare named caches with <code>@KoCache</code>. Locally backed by <code>ConcurrentHashMap</code>,
+        in production by Redis or Memcached.
+      </p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename">Using a cache</span>
+          <span class="code-lang">Java</span>
+        </div>
+        <pre><span class="ann">@KoCache</span>(name = <span class="str">"product-cache"</span>, keyType = String.<span class="kw">class</span>, ttl = <span class="num">900</span>)
+<span class="kw">private</span> <span class="type">KoCache</span>&lt;String, ProductResponse&gt; cache;
+
+<span class="ann">@KoAPI</span>(method = <span class="str">"GET"</span>, path = <span class="str">"/products/:id"</span>)
+<span class="kw">public</span> <span class="type">ProductResponse</span> <span class="fn">getProduct</span>(<span class="ann">@PathParam</span>(<span class="str">"id"</span>) <span class="type">String</span> id) {
+    <span class="kw">return</span> cache.<span class="fn">getOrSet</span>(id, () -&gt;
+        db.<span class="fn">queryOne</span>(<span class="str">"SELECT * FROM products WHERE id = ?"</span>, id)
+          .<span class="fn">map</span>(ProductResponse::<span class="fn">from</span>)
+          .<span class="fn">orElseThrow</span>(() -&gt; <span class="type">KoError</span>.<span class="fn">notFound</span>(<span class="str">"Product not found"</span>))
+    );
+}</pre>
+      </div>
+
+      <table class="mapping-table">
+        <thead>
+          <tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>name</td><td>String</td><td>&mdash;</td><td>Unique cache name (kebab-case)</td></tr>
+          <tr><td>keyType</td><td>Class&lt;?&gt;</td><td>String.class</td><td>Type of the cache key</td></tr>
+          <tr><td>ttl</td><td>long</td><td>300</td><td>Time-to-live in seconds</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ═══════════════════════════════════════ -->
+    <!-- CRON                                    -->
+    <!-- ═══════════════════════════════════════ -->
+    <div class="page" id="cron">
+      <div class="page-badge"><span>&#9200;</span> Infrastructure</div>
+      <h1>Cron Jobs<span class="accent">.</span></h1>
+      <p class="page-lead">
+        Schedule recurring work with <code>@KoCron</code>. Validated at compile time.
+      </p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename">Cron job examples</span>
+          <span class="code-lang">Java</span>
+        </div>
+        <pre><span class="cmt">// Every day at 3 AM</span>
+<span class="ann">@KoCron</span>(schedule = <span class="str">"0 3 * * *"</span>, name = <span class="str">"daily-cleanup"</span>)
+<span class="kw">public void</span> <span class="fn">dailyCleanup</span>() { <span class="cmt">/* ... */</span> }
+
+<span class="cmt">// Every 15 minutes</span>
+<span class="ann">@KoCron</span>(schedule = <span class="str">"*/15 * * * *"</span>, name = <span class="str">"sync-inventory"</span>)
+<span class="kw">public void</span> <span class="fn">syncInventory</span>() { <span class="cmt">/* ... */</span> }
+
+<span class="cmt">// Weekdays at 9 AM</span>
+<span class="ann">@KoCron</span>(schedule = <span class="str">"0 9 * * MON-FRI"</span>, name = <span class="str">"send-digest"</span>)
+<span class="kw">public void</span> <span class="fn">sendDailyDigest</span>() { <span class="cmt">/* ... */</span> }</pre>
+      </div>
+
+      <h2>Cron Expression Format</h2>
+
+      <div class="prose">
+        <p>
+          Ko&#x323;&#x301; uses standard <strong>5-field cron expressions</strong>. The processor validates
+          these at compile time &mdash; invalid expressions fail the build.
+        </p>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename">Cron format</span>
+          <span class="code-lang">Text</span>
+        </div>
+        <pre>&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472; minute (0-59)
+&#9474; &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472; hour (0-23)
+&#9474; &#9474; &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472; day of month (1-31)
+&#9474; &#9474; &#9474; &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472; month (1-12 or JAN-DEC)
+&#9474; &#9474; &#9474; &#9474; &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472; day of week (0-7 or MON-SUN)
+&#9474; &#9474; &#9474; &#9474; &#9474;
+* * * * *</pre>
+      </div>
+
+      <div class="callout warn">
+        <div class="callout-title">Compile-Time Validation</div>
+        <p>Invalid cron expressions like <code>"60 * * * *"</code> (minute > 59) or <code>"* * *"</code> (wrong field count) will cause a build failure with a descriptive error message.</p>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════ -->
+    <!-- OBJECT STORAGE                          -->
+    <!-- ═══════════════════════════════════════ -->
+    <div class="page" id="storage">
+      <div class="page-badge"><span>&#9744;</span> Infrastructure</div>
+      <h1>Object Storage<span class="accent">.</span></h1>
+      <p class="page-lead">
+        Declare storage buckets with <code>@KoBucket</code>. Locally backed by MinIO or the filesystem,
+        in production by S3, GCS, or compatible stores.
+      </p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename">Using a bucket</span>
+          <span class="code-lang">Java</span>
+        </div>
+        <pre><span class="ann">@KoBucket</span>(name = <span class="str">"user-avatars"</span>, publicRead = <span class="kw">true</span>)
+<span class="kw">private</span> <span class="type">KoBucket</span> avatarBucket;
+
+<span class="ann">@KoAPI</span>(method = <span class="str">"POST"</span>, path = <span class="str">"/users/:id/avatar"</span>, auth = <span class="kw">true</span>)
+<span class="kw">public</span> <span class="type">AvatarResponse</span> <span class="fn">uploadAvatar</span>(
+    <span class="ann">@PathParam</span>(<span class="str">"id"</span>) <span class="type">String</span> userId,
+    <span class="type">UploadRequest</span> req
+) {
+    <span class="type">String</span> key = <span class="str">"avatars/"</span> + userId + <span class="str">".png"</span>;
+    avatarBucket.<span class="fn">put</span>(key, req.data(), <span class="str">"image/png"</span>);
+    <span class="kw">return new</span> <span class="type">AvatarResponse</span>(avatarBucket.<span class="fn">publicUrl</span>(key));
+}</pre>
+      </div>
+
+      <table class="mapping-table">
+        <thead>
+          <tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>name</td><td>String</td><td>&mdash;</td><td>Unique bucket name (kebab-case)</td></tr>
+          <tr><td>publicRead</td><td>boolean</td><td>false</td><td>Whether objects are publicly readable</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ═══════════════════════════════════════ -->
+    <!-- SECRETS                                 -->
+    <!-- ═══════════════════════════════════════ -->
+    <div class="page" id="secrets">
+      <div class="page-badge"><span>&#9919;</span> Infrastructure</div>
+      <h1>Secrets<span class="accent">.</span></h1>
+      <p class="page-lead">
+        Declare application secrets with <code>@KoSecret</code>. Resolved from environment
+        variables locally, from secret managers in production.
+      </p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename">Using secrets</span>
+          <span class="code-lang">Java</span>
+        </div>
+        <pre><span class="ann">@KoService</span>(<span class="str">"payment-service"</span>)
+<span class="kw">public class</span> <span class="type">PaymentService</span> {
+
+    <span class="ann">@KoSecret</span>(<span class="str">"stripe-api-key"</span>)
+    <span class="kw">private</span> <span class="type">KoSecret</span> stripeKey;
+
+    <span class="ann">@KoSecret</span>(<span class="str">"webhook-signing-secret"</span>)
+    <span class="kw">private</span> <span class="type">KoSecret</span> webhookSecret;
+
+    <span class="ann">@KoAPI</span>(method = <span class="str">"POST"</span>, path = <span class="str">"/payments"</span>, auth = <span class="kw">true</span>)
+    <span class="kw">public</span> <span class="type">PaymentResponse</span> <span class="fn">charge</span>(<span class="type">ChargeRequest</span> req) {
+        <span class="type">Stripe</span>.<span class="fn">init</span>(stripeKey.<span class="fn">value</span>());
+        <span class="cmt">// ...</span>
+    }
+}</pre>
+      </div>
+
+      <div class="callout info">
+        <div class="callout-title">Resolution Order</div>
+        <p>Secrets are resolved based on the environment: environment variables for local development, AWS Secrets Manager, GCP Secret Manager, or HashiCorp Vault in production &mdash; configured via <code>infra-config.json</code>.</p>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════ -->
+    <!-- SERVICE-TO-SERVICE CALLS                -->
+    <!-- ═══════════════════════════════════════ -->
+    <div class="page" id="service-calls">
+      <div class="page-badge"><span>&#8646;</span> Advanced</div>
+      <h1>Service-to-Service Calls<span class="accent">.</span></h1>
+      <p class="page-lead">
+        Call other services with <strong>type-safe generated clients</strong>. Same code works
+        as in-process calls locally and HTTP calls in production.
+      </p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename">Using a service client</span>
+          <span class="code-lang">Java</span>
+        </div>
+        <pre><span class="ann">@KoService</span>(<span class="str">"notification-service"</span>)
+<span class="kw">public class</span> <span class="type">NotificationService</span> {
+
+    <span class="ann">@KoServiceClient</span>
+    <span class="kw">private</span> <span class="type">UserServiceClient</span> userService;  <span class="cmt">// Auto-generated</span>
+
+    <span class="ann">@KoSubscribe</span>(topic = <span class="str">"order-placed"</span>, name = <span class="str">"notify-user"</span>)
+    <span class="kw">public void</span> <span class="fn">onOrderPlaced</span>(<span class="type">OrderPlacedEvent</span> event) {
+        <span class="cmt">// Type-safe call to user-service &mdash; no HTTP boilerplate</span>
+        <span class="type">UserResponse</span> user = userService.<span class="fn">getUser</span>(event.userId());
+        sendEmail(user.email(), <span class="str">"Your order has been placed!"</span>);
+    }
+}</pre>
+      </div>
+
+      <div class="flow-diagram">
+        <div class="flow-label">How service calls are routed</div>
+        <div class="flow-row">
+          <div class="flow-box amber">Service Client</div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-box purple">KoServiceCaller</div>
+        </div>
+        <div class="flow-arrow down">&darr;</div>
+        <div class="flow-row">
+          <div class="flow-box green">Local: InProcessCaller<br><span style="font-size:0.65rem;opacity:0.7">Direct method invocation</span></div>
+          <div class="flow-box red">Prod: HttpServiceCaller<br><span style="font-size:0.65rem;opacity:0.7">HTTP via service discovery</span></div>
+        </div>
+      </div>
+
+      <div class="prose">
+        <p>
+          The <strong>KoServiceCaller</strong> interface routes calls based on the environment.
+          Locally, when all services run in a single JVM, <code>InProcessCaller</code> invokes
+          the target method directly &mdash; no network hop. In production, <code>HttpServiceCaller</code>
+          resolves the target URL from <code>service_discovery</code> in <code>infra-config.json</code>
+          and makes an HTTP call. Your code never changes.
+        </p>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════ -->
+    <!-- TESTING                                 -->
+    <!-- ═══════════════════════════════════════ -->
+    <div class="page" id="testing">
+      <div class="page-badge"><span>&#10003;</span> Advanced</div>
+      <h1>Testing<span class="accent">.</span></h1>
+      <p class="page-lead">
+        Ko&#x323;&#x301; provides a JUnit 5 extension that manages infrastructure lifecycle,
+        provisions isolated Testcontainers per test, and offers mock service clients.
+      </p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename">InventoryServiceTest.java</span>
+          <span class="code-lang">Java</span>
+        </div>
+        <pre><span class="ann">@ExtendWith</span>(<span class="type">KoTestExtension</span>.<span class="kw">class</span>)
+<span class="kw">class</span> <span class="type">InventoryServiceTest</span> {
+
+    <span class="ann">@KoInject</span>
+    <span class="type">InventoryService</span> service;
+
+    <span class="ann">@KoInject</span>
+    <span class="type">KoSQLDatabase</span> db;
+
+    <span class="ann">@Test</span>
+    <span class="kw">void</span> <span class="fn">getStock_existingSku_returnsQuantity</span>() {
+        <span class="cmt">// Given: seed test data</span>
+        db.<span class="fn">exec</span>(<span class="str">"INSERT INTO stock (sku, quantity) VALUES ('ABC-123', 42)"</span>);
+
+        <span class="cmt">// When</span>
+        <span class="type">StockResponse</span> result = service.<span class="fn">getStock</span>(<span class="str">"ABC-123"</span>);
+
+        <span class="cmt">// Then</span>
+        assertThat(result.quantity()).<span class="fn">isEqualTo</span>(<span class="num">42</span>);
+    }
+
+    <span class="ann">@Test</span>
+    <span class="kw">void</span> <span class="fn">getStock_unknownSku_throwsNotFound</span>() {
+        assertThatThrownBy(() -&gt; service.<span class="fn">getStock</span>(<span class="str">"UNKNOWN"</span>))
+            .<span class="fn">isInstanceOf</span>(<span class="type">KoError</span>.<span class="kw">class</span>);
+    }
+}</pre>
+      </div>
+
+      <div class="callout tip">
+        <div class="callout-title">Test Naming Convention</div>
+        <p>Follow <code>MethodUnderTest_StateOrInput_ExpectedBehavior</code> for test method names, e.g. <code>publish_validMessage_deliveredToSubscriber</code>.</p>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════ -->
+    <!-- CONFIGURATION                           -->
+    <!-- ═══════════════════════════════════════ -->
+    <div class="page" id="configuration">
+      <div class="page-badge"><span>&#9881;</span> Advanced</div>
+      <h1>Configuration<span class="accent">.</span></h1>
+      <p class="page-lead">
+        Ko&#x323;&#x301; uses two configuration files: <code>ko-app-model.json</code> (generated,
+        read-only) and <code>infra-config.json</code> (environment-specific, maps logical resources
+        to physical infrastructure).
+      </p>
+
+      <h2>infra-config.json</h2>
+
+      <div class="prose">
+        <p>
+          This file tells the runtime <strong>where</strong> each declared resource lives. Locally, the CLI
+          generates it automatically from Testcontainer addresses. In production, you provide it with real
+          connection strings.
+        </p>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename">infra-config.json (production)</span>
+          <span class="code-lang">JSON</span>
+        </div>
+        <pre>{
+  <span class="str">"metadata"</span>: {
+    <span class="str">"app_id"</span>: <span class="str">"my-app"</span>,
+    <span class="str">"env_name"</span>: <span class="str">"production"</span>,
+    <span class="str">"env_type"</span>: <span class="str">"production"</span>,
+    <span class="str">"cloud"</span>: <span class="str">"aws"</span>
+  },
+  <span class="str">"sql_servers"</span>: [{
+    <span class="str">"host"</span>: <span class="str">"db.internal:5432"</span>,
+    <span class="str">"databases"</span>: {
+      <span class="str">"inventory"</span>: {
+        <span class="str">"username"</span>: <span class="str">"app"</span>,
+        <span class="str">"password"</span>: { <span class="str">"$env"</span>: <span class="str">"DB_PASSWORD"</span> }
+      }
+    }
+  }],
+  <span class="str">"redis"</span>: {
+    <span class="str">"product-cache"</span>: { <span class="str">"host"</span>: <span class="str">"redis.internal:6379"</span> }
+  },
+  <span class="str">"service_discovery"</span>: {
+    <span class="str">"user-service"</span>: { <span class="str">"base_url"</span>: <span class="str">"http://user-svc.internal:8080"</span> }
+  }
+}</pre>
+      </div>
+
+      <div class="callout">
+        <div class="callout-title">Environment Variable References</div>
+        <p>Use <code>{"$env": "VAR_NAME"}</code> in infra-config.json to reference environment variables. The runtime resolves these at startup &mdash; secrets never appear in config files.</p>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════ -->
+    <!-- ANNOTATION REFERENCE                    -->
+    <!-- ═══════════════════════════════════════ -->
+    <div class="page" id="annotations">
+      <div class="page-badge"><span>&#64;</span> Reference</div>
+      <h1>Annotation Reference<span class="accent">.</span></h1>
+      <p class="page-lead">
+        Complete reference for all Ko&#x323;&#x301; annotations.
+      </p>
+
+      <table class="mapping-table">
+        <thead>
+          <tr><th>Annotation</th><th>Target</th><th>Purpose</th><th>Key Attributes</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>@KoService</td><td>Type</td><td>Declares a microservice boundary</td><td>value (name)</td></tr>
+          <tr><td>@KoAPI</td><td>Method</td><td>Declares an HTTP endpoint</td><td>method, path, auth, permissions, expose</td></tr>
+          <tr><td>@KoDatabase</td><td>Field</td><td>Declares a SQL database</td><td>name, migrations</td></tr>
+          <tr><td>@KoPubSub</td><td>Field</td><td>Declares a message topic</td><td>topic, delivery</td></tr>
+          <tr><td>@KoSubscribe</td><td>Method</td><td>Subscribes to a topic</td><td>topic, name, maxRetries, deadLetter</td></tr>
+          <tr><td>@KoCache</td><td>Field</td><td>Declares a key-value cache</td><td>name, keyType, ttl</td></tr>
+          <tr><td>@KoCron</td><td>Method</td><td>Declares a scheduled job</td><td>schedule, name</td></tr>
+          <tr><td>@KoBucket</td><td>Field</td><td>Declares object storage</td><td>name, publicRead</td></tr>
+          <tr><td>@KoSecret</td><td>Field</td><td>Declares an application secret</td><td>value (name)</td></tr>
+          <tr><td>@KoServiceClient</td><td>Field</td><td>Injects a generated service client</td><td>value (service name)</td></tr>
+          <tr><td>@PathParam</td><td>Parameter</td><td>Binds a path parameter</td><td>value (param name)</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Retention Policy</h2>
+
+      <div class="prose">
+        <p>
+          All Ko&#x323;&#x301; annotations use <code>@Retention(RUNTIME)</code> so they are available
+          both at compile time (for the annotation processor) and at runtime (for the Spring Boot
+          auto-configuration engine).
+        </p>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════ -->
+    <!-- CLI REFERENCE                           -->
+    <!-- ═══════════════════════════════════════ -->
+    <div class="page" id="cli-ref">
+      <div class="page-badge"><span>&gt;_</span> Reference</div>
+      <h1>CLI Reference<span class="accent">.</span></h1>
+      <p class="page-lead">
+        The <code>ko</code> command-line tool orchestrates local development, builds, and code generation.
+      </p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename">Terminal</span>
+          <span class="code-lang">Shell</span>
+        </div>
+        <pre><span class="cmt"># Start local dev environment</span>
+$ ko run
+
+<span class="cmt"># Build production Docker image</span>
+$ ko build docker --config infra-prod.json my-app:latest
+
+<span class="cmt"># Generate TypeScript API client</span>
+$ ko gen client --lang typescript --output ./frontend/src/api
+
+<span class="cmt"># Run tests with isolated infrastructure</span>
+$ ko test
+
+<span class="cmt"># View the application model</span>
+$ ko model
+
+<span class="cmt"># Open the dev dashboard</span>
+$ ko dashboard</pre>
+      </div>
+
+      <h2>Commands</h2>
+
+      <table class="mapping-table">
+        <thead>
+          <tr><th>Command</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>ko run</td><td>Start the application with auto-provisioned local infrastructure</td></tr>
+          <tr><td>ko build</td><td>Build the application (compile + generate model)</td></tr>
+          <tr><td>ko build docker</td><td>Build a production Docker image</td></tr>
+          <tr><td>ko test</td><td>Run tests with isolated Testcontainer infrastructure</td></tr>
+          <tr><td>ko gen client</td><td>Generate typed API clients (TypeScript, etc.)</td></tr>
+          <tr><td>ko model</td><td>Display the Application Model</td></tr>
+          <tr><td>ko dashboard</td><td>Open the dev dashboard in a browser</td></tr>
+          <tr><td>ko version</td><td>Print version information</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ═══════════════════════════════════════ -->
+    <!-- ARCHITECTURE                            -->
+    <!-- ═══════════════════════════════════════ -->
+    <div class="page" id="architecture">
+      <div class="page-badge"><span>&#9635;</span> Reference</div>
+      <h1>Architecture<span class="accent">.</span></h1>
+      <p class="page-lead">
+        How the Ko&#x323;&#x301; framework is structured internally &mdash; modules, data flow,
+        and the provider interface pattern.
+      </p>
+
+      <h2>Data Flow</h2>
+
+      <div class="flow-diagram">
+        <div class="flow-label">Annotated source code to running infrastructure</div>
+        <div class="flow-row">
+          <div class="flow-box amber">@Ko* Annotations</div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-box blue">Annotation Processor</div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-box purple">ko-app-model.json</div>
+        </div>
+        <div class="flow-arrow down">&darr;</div>
+        <div class="flow-label">Consumed by every downstream tool</div>
+        <div class="flow-row">
+          <div class="flow-box green">Runtime Engine</div>
+          <div class="flow-box green">CLI (ko run)</div>
+          <div class="flow-box green">Dev Dashboard</div>
+          <div class="flow-box green">Code Generator</div>
+        </div>
+        <div class="flow-arrow down">&darr;</div>
+        <div class="flow-label">Infrastructure resolved per environment</div>
+        <div class="flow-row">
+          <div class="flow-box red">Local (Testcontainers)</div>
+          <div class="flow-box red">Docker (Self-hosted)</div>
+          <div class="flow-box red">Cloud (AWS / GCP)</div>
+        </div>
+      </div>
+
+      <h2>Module Dependency Chain</h2>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename">Module hierarchy</span>
+          <span class="code-lang">Text</span>
+        </div>
+        <pre><span class="ann">ko-annotations</span>       <span class="cmt">zero deps &mdash; pure annotation definitions</span>
+      &uarr;
+<span class="ann">ko-processor</span>         <span class="cmt">ko-annotations, JavaPoet, Jackson</span>
+      &uarr;
+<span class="ann">ko-runtime</span>           <span class="cmt">ko-annotations, Spring Boot, HikariCP, providers</span>
+      &uarr;
+<span class="ann">ko-gradle-plugin</span>     <span class="cmt">ko-processor</span>
+      &uarr;
+<span class="ann">ko-test</span>              <span class="cmt">ko-runtime, JUnit 5, Testcontainers</span>
+      &uarr;
+<span class="ann">ko-e2e-tests</span>         <span class="cmt">ko-test, all provider modules</span></pre>
+      </div>
+
+      <h2>Provider Interface Pattern</h2>
+
+      <div class="prose">
+        <p>
+          Every infrastructure primitive follows the same pattern: a <strong>provider interface</strong>
+          defines the contract, an <strong>in-memory implementation</strong> handles local dev and tests,
+          <strong>production implementations</strong> handle real infrastructure (Kafka, Redis, S3, etc.),
+          and <strong>auto-configuration</strong> selects the right one based on <code>infra-config.json</code>.
+        </p>
+      </div>
+
+      <div class="card-grid">
+        <div class="card">
+          <div class="card-icon purple">I</div>
+          <h3>Provider Interface</h3>
+          <p>Defines the contract: <code>KoPubSubProvider</code>, <code>KoDatabaseProvider</code>, <code>KoCacheProvider</code>, etc.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon green">L</div>
+          <h3>Local Implementation</h3>
+          <p>In-memory: <code>InMemoryPubSubProvider</code>, <code>ConcurrentHashMapCache</code>, etc. Used in dev and tests.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon red">P</div>
+          <h3>Production Implementations</h3>
+          <p>Real infra: <code>KafkaPubSubProvider</code>, <code>RedisCache</code>, <code>S3BucketProvider</code>. Separate modules.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon amber">A</div>
+          <h3>Auto-Configuration</h3>
+          <p>Spring Boot auto-config reads <code>infra-config.json</code> and wires the correct provider bean per resource.</p>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<div style="margin-left: var(--sidebar-w); text-align: center; padding: 2rem 0; border-top: 1px solid var(--border);">
+  <p style="color: var(--text-dim); font-size: 0.75rem; letter-spacing: 0.05em;">
+    KO&#x323;&#x301; FRAMEWORK &mdash; DOCUMENTATION v0.1.0
+  </p>
+</div>
+
+<script>
+  const sidebarLinks = document.querySelectorAll('.sidebar-link');
+  const pages = document.querySelectorAll('.page');
+  const breadcrumb = document.getElementById('breadcrumb');
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  const toggle = document.getElementById('mobileToggle');
+
+  function navigateTo(pageId) {
+    pages.forEach(p => p.classList.remove('active'));
+    sidebarLinks.forEach(l => l.classList.remove('active'));
+
+    const targetPage = document.getElementById(pageId);
+    const targetLink = document.querySelector(`[data-page="${pageId}"]`);
+
+    if (targetPage) targetPage.classList.add('active');
+    if (targetLink) {
+      targetLink.classList.add('active');
+      breadcrumb.textContent = targetLink.textContent;
+    }
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Close mobile sidebar
+    sidebar.classList.remove('open');
+    overlay.classList.remove('open');
+  }
+
+  sidebarLinks.forEach(link => {
+    link.addEventListener('click', () => {
+      const page = link.dataset.page;
+      navigateTo(page);
+      history.pushState(null, '', '#' + page);
+    });
+  });
+
+  // Handle hash navigation
+  function handleHash() {
+    const hash = window.location.hash.slice(1);
+    if (hash && document.getElementById(hash)) {
+      navigateTo(hash);
+    }
+  }
+
+  window.addEventListener('hashchange', handleHash);
+  if (window.location.hash) handleHash();
+
+  // Mobile sidebar toggle
+  toggle.addEventListener('click', () => {
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('open');
+  });
+
+  overlay.addEventListener('click', () => {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('open');
+  });
+
+  // Keyboard shortcut hint (Cmd+K)
+  document.addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault();
+      // Future: open search modal
+    }
+  });
+</script>
+
+</body>
+</html>

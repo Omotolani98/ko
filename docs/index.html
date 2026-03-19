@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ko&#x323;&#x301; Framework — Type-Safe Distributed Systems for Java</title>
+<meta name="description" content="A Java 21+ framework for building type-safe distributed systems with declarative infrastructure annotations. Inspired by Encore.dev, built on Spring Boot 3.x.">
+<meta name="theme-color" content="#0a0a0f">
+<link rel="stylesheet" href="styles.css">
+<style>
+  /* ── Landing ── */
+
+  .landing-wrapper { min-height: 100vh; }
+
+  .landing-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 200;
+    background: rgba(10, 10, 15, 0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+  }
+
+  .landing-nav-logo {
+    font-size: 1.25rem;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    cursor: pointer;
+  }
+
+  .landing-nav-logo .dot { color: var(--accent); }
+
+  .landing-nav-links {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .landing-nav-link {
+    padding: 0.5rem 0.85rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: none;
+    background: none;
+    font-family: inherit;
+  }
+
+  .landing-nav-link:hover { color: var(--text); background: var(--bg-hover); }
+
+  .landing-nav-link.primary {
+    background: var(--accent);
+    color: var(--bg);
+    font-weight: 600;
+  }
+
+  .landing-nav-link.primary:hover { background: #d97706; }
+
+  .landing-hero {
+    padding: 8rem 0 4rem;
+    position: relative;
+  }
+
+  .landing-hero::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 800px; height: 600px;
+    background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .landing-hero-content {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .landing-hero h1 {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .landing-hero-sub {
+    font-size: 1.2rem;
+    color: var(--text-muted);
+    font-weight: 300;
+    line-height: 1.8;
+    max-width: 640px;
+    margin: 0 auto 2.5rem;
+  }
+
+  .landing-hero-sub strong { color: var(--text); font-weight: 500; }
+
+  .landing-cta-row {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.75rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    font-family: 'Outfit', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+  }
+
+  .btn-primary:hover { background: #d97706; border-color: #d97706; }
+
+  .btn-secondary {
+    background: var(--bg-elevated);
+    color: var(--text);
+    border-color: var(--border);
+  }
+
+  .btn-secondary:hover { border-color: var(--border-accent); background: var(--bg-hover); }
+
+  .landing-install {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 2rem;
+    padding: 0.75rem 1.25rem;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .landing-install code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+
+  .landing-install code .ann { color: var(--accent); }
+
+  /* ── Sections ── */
+
+  .landing-section {
+    padding: 5rem 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .landing-section-header {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+
+  .landing-section-header h2 {
+    font-size: 2.2rem;
+    margin: 0 0 0.75rem;
+  }
+
+  .landing-section-header p {
+    color: var(--text-muted);
+    font-size: 1rem;
+    font-weight: 300;
+    max-width: 560px;
+    margin: 0 auto;
+  }
+
+  /* ── How it works ── */
+
+  .how-it-works {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  /* ── Feature grid ── */
+
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  .feature-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2rem 1.5rem;
+    transition: border-color 0.2s;
+  }
+
+  .feature-card:hover { border-color: var(--border-accent); }
+
+  .feature-card .icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    font-weight: 700;
+  }
+
+  .feature-card h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem;
+  }
+
+  .feature-card p {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.65;
+    font-weight: 300;
+  }
+
+  /* ── Code showcase ── */
+
+  .code-showcase {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  /* ── Primitives strip ── */
+
+  .primitives-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-top: 2rem;
+  }
+
+  .primitive-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1rem;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--accent);
+    font-weight: 600;
+    transition: border-color 0.2s;
+    cursor: pointer;
+  }
+
+  .primitive-tag:hover { border-color: var(--accent-dim); }
+
+  .primitive-tag .map {
+    color: var(--text-dim);
+    font-weight: 400;
+    font-size: 0.7rem;
+  }
+
+  /* ── Landing footer ── */
+
+  .landing-footer {
+    border-top: 1px solid var(--border);
+    padding: 2.5rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .landing-footer-logo {
+    font-size: 1.1rem;
+    font-weight: 800;
+  }
+
+  .landing-footer-logo .dot { color: var(--accent); }
+
+  .landing-footer-links {
+    display: flex;
+    gap: 1.5rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+
+  .landing-footer-links a:hover { color: var(--text); }
+
+  .landing-footer-copy {
+    font-size: 0.72rem;
+    color: var(--text-dim);
+  }
+
+  /* ── Docs view ── */
+
+  .docs-wrapper {
+    display: flex;
+    min-height: 100vh;
+  }
+
+  .sidebar {
+    width: var(--sidebar-w);
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    background: var(--bg-surface);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+    transition: transform 0.3s ease;
+  }
+
+  .sidebar-header {
+    padding: 1.5rem 1.25rem 1rem;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .sidebar-logo {
+    font-size: 1.5rem;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    cursor: pointer;
+  }
+
+  .sidebar-logo .dot { color: var(--accent); }
+
+  .sidebar-version {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+    margin-top: 0.15rem;
+    letter-spacing: 0.05em;
+  }
+
+  .sidebar-nav { padding: 1rem 0; flex: 1; }
+
+  .sidebar-group { margin-bottom: 0.5rem; }
+
+  .sidebar-group-title {
+    padding: 0.35rem 1.25rem;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+  }
+
+  .sidebar-link {
+    display: block;
+    padding: 0.4rem 1.25rem 0.4rem 1.75rem;
+    font-size: 0.84rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-weight: 400;
+    transition: all 0.15s;
+    border-left: 2px solid transparent;
+    cursor: pointer;
+  }
+
+  .sidebar-link:hover {
+    color: var(--text);
+    background: var(--bg-hover);
+  }
+
+  .sidebar-link.active {
+    color: var(--accent);
+    border-left-color: var(--accent);
+    background: var(--accent-glow);
+  }
+
+  .docs-main {
+    flex: 1;
+    margin-left: var(--sidebar-w);
+    min-width: 0;
+  }
+
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10, 10, 15, 0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 0.65rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .topbar-breadcrumb {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+
+  .topbar-breadcrumb span { color: var(--text-dim); }
+  .topbar-breadcrumb strong { color: var(--text); font-weight: 600; }
+
+  .topbar-actions {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+  }
+
+  .github-link {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.82rem;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+
+  .github-link:hover { color: var(--text); }
+
+  .docs-content {
+    max-width: 860px;
+    padding: 2.5rem 3rem 6rem;
+  }
+
+  .docs-footer {
+    margin-left: var(--sidebar-w);
+  }
+
+  /* ── Mobile ── */
+
+  .mobile-toggle {
+    display: none;
+    position: fixed;
+    bottom: 1.25rem;
+    right: 1.25rem;
+    z-index: 300;
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: none;
+    color: var(--bg);
+    font-size: 1.2rem;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(245, 158, 11, 0.3);
+  }
+
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 190;
+  }
+
+  @media (max-width: 900px) {
+    /* Docs mobile */
+    .sidebar { transform: translateX(-100%); }
+    .sidebar.open { transform: translateX(0); }
+    .sidebar-overlay.open { display: block; }
+    .docs-main { margin-left: 0; }
+    .docs-footer { margin-left: 0; }
+    .mobile-toggle { display: flex; align-items: center; justify-content: center; }
+    .docs-content { padding: 2rem 1.25rem 4rem; }
+    .topbar { padding: 0.65rem 1.25rem; }
+
+    /* Landing mobile */
+    .landing-hero h1 { font-size: 2.5rem; }
+    .landing-nav-links .hide-mobile { display: none; }
+    .feature-grid { grid-template-columns: 1fr; }
+    .landing-footer { flex-direction: column; gap: 1rem; text-align: center; }
+  }
+
+  @media (max-width: 480px) {
+    .docs-content { padding: 1.5rem 1rem 4rem; }
+    .landing-hero h1 { font-size: 2rem; }
+    .container { padding: 0 1rem; }
+  }
+</style>
+</head>
+<body class="landing">
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- LANDING VIEW                                    -->
+<!-- ═══════════════════════════════════════════════ -->
+<div id="landingView">
+
+  <!-- Nav -->
+  <nav class="landing-nav">
+    <a class="landing-nav-logo logo-link" href="#">Ko&#x323;&#x301;<span class="dot">.</span></a>
+    <div class="landing-nav-links">
+      <button class="landing-nav-link hide-mobile" data-nav="introduction">Docs</button>
+      <button class="landing-nav-link hide-mobile" data-nav="quickstart">Quickstart</button>
+      <a class="landing-nav-link" href="https://github.com/nicholasadamou/ko" target="_blank">GitHub</a>
+      <button class="landing-nav-link primary" data-nav="quickstart">Get Started</button>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <div class="landing-hero">
+    <div class="landing-hero-content">
+      <div class="page-badge"><span>&#9650;</span> Java 21+ &middot; Spring Boot 3.x &middot; MPL-2.0</div>
+      <h1>Build distributed systems<span class="accent">.</span><br>Not infrastructure.</h1>
+      <p class="landing-hero-sub">
+        <strong>Ko&#x323;&#x301;</strong> is a framework for building <strong>type-safe distributed systems</strong>
+        with declarative infrastructure annotations. Inspired by <strong>Encore.dev</strong>,
+        built for the JVM. Annotations replace YAML &mdash; your code is the source of truth.
+      </p>
+      <div class="landing-cta-row">
+        <button class="btn btn-primary" data-nav="quickstart">Get Started</button>
+        <a class="btn btn-secondary" href="https://github.com/nicholasadamou/ko" target="_blank">View on GitHub</a>
+      </div>
+      <div class="landing-install">
+        <code><span class="ann">plugins</span> { id(<span class="str">"dev.ko"</span>) }</code>
+      </div>
+    </div>
+  </div>
+
+  <!-- How It Works -->
+  <div class="landing-section">
+    <div class="container">
+      <div class="landing-section-header">
+        <h2>How it works<span class="accent">.</span></h2>
+        <p>Annotate your code. The framework builds everything else.</p>
+      </div>
+      <div class="how-it-works">
+        <div class="flow-diagram">
+          <div class="flow-label">Developer writes application code with annotations</div>
+          <div class="flow-row">
+            <div class="flow-box amber">@KoService</div>
+            <div class="flow-box amber">@KoAPI</div>
+            <div class="flow-box amber">@KoDatabase</div>
+            <div class="flow-box amber">@KoPubSub</div>
+            <div class="flow-box amber">@KoCron</div>
+          </div>
+          <div class="flow-arrow down">&darr;</div>
+          <div class="flow-label">Compile-time annotation processor (javac plugin)</div>
+          <div class="flow-row">
+            <div class="flow-box blue">Annotation Processor</div>
+            <div class="flow-arrow">&rarr;</div>
+            <div class="flow-box purple">Application Model (JSON)</div>
+          </div>
+          <div class="flow-arrow down">&darr;</div>
+          <div class="flow-label">Application Model feeds into every tool</div>
+          <div class="flow-row">
+            <div class="flow-box green">Runtime Engine</div>
+            <div class="flow-box green">CLI Tooling</div>
+            <div class="flow-box green">Dev Dashboard</div>
+            <div class="flow-box green">Code Generator</div>
+          </div>
+          <div class="flow-arrow down">&darr;</div>
+          <div class="flow-label">Runtime resolves infrastructure per environment</div>
+          <div class="flow-row">
+            <div class="flow-box red">Local (Testcontainers)</div>
+            <div class="flow-box red">Docker (Self-hosted)</div>
+            <div class="flow-box red">Cloud (AWS / GCP)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Features -->
+  <div class="landing-section">
+    <div class="container">
+      <div class="landing-section-header">
+        <h2>Why Ko&#x323;&#x301;<span class="accent">?</span></h2>
+        <p>Everything you need to go from code to production with zero infrastructure boilerplate.</p>
+      </div>
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="icon" style="background:var(--accent-glow);color:var(--accent);border:1px solid var(--accent-dim);">&#9671;</div>
+          <h3>Declarative Infrastructure</h3>
+          <p>Annotate what you need &mdash; databases, caches, topics &mdash; and the framework provisions it. No Terraform or Helm for local dev.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon" style="background:rgba(96,165,250,0.1);color:var(--blue);border:1px solid var(--blue-dim);">&#9677;</div>
+          <h3>Compile-Time Safety</h3>
+          <p>The annotation processor validates cron expressions, API paths, naming conventions, and circular dependencies at build time.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon" style="background:rgba(52,211,153,0.1);color:var(--green);border:1px solid var(--green-dim);">&#9678;</div>
+          <h3>Zero-Config Local Dev</h3>
+          <p>One command spins up Postgres, Kafka, Redis &mdash; whatever your services declare. Testcontainers under the hood.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon" style="background:rgba(167,139,250,0.1);color:var(--purple);border:1px solid var(--purple-dim);">&#9670;</div>
+          <h3>Cloud-Agnostic</h3>
+          <p>Provider interfaces abstract AWS, GCP, and self-hosted. Same code runs locally, in Docker, or across clouds.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon" style="background:rgba(248,113,113,0.1);color:var(--red);border:1px solid var(--red-dim);">&#8646;</div>
+          <h3>Service-to-Service Calls</h3>
+          <p>Generated type-safe clients route calls in-process locally and over HTTP in production. No boilerplate.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon" style="background:rgba(34,211,238,0.1);color:var(--cyan);border:1px solid rgba(34,211,238,0.2);">&#9635;</div>
+          <h3>Dev Dashboard</h3>
+          <p>Architecture graph, API explorer, distributed tracing, and database browser &mdash; all auto-generated from your code.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Code Example -->
+  <div class="landing-section">
+    <div class="container">
+      <div class="landing-section-header">
+        <h2>A taste of Ko&#x323;&#x301;<span class="accent">.</span></h2>
+        <p>One class. One database. One topic. One cron job. Zero boilerplate.</p>
+      </div>
+      <div class="code-showcase">
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-filename">UserService.java</span>
+            <span class="code-lang">Java</span>
+          </div>
+          <pre><span class="ann">@KoService</span>(<span class="str">"user-service"</span>)
+<span class="kw">public class</span> <span class="type">UserService</span> {
+
+    <span class="ann">@KoDatabase</span>(name = <span class="str">"users"</span>)
+    <span class="kw">private</span> <span class="type">KoSQLDatabase</span> db;
+
+    <span class="ann">@KoPubSub</span>(topic = <span class="str">"user-registered"</span>)
+    <span class="kw">private</span> <span class="type">KoTopic</span>&lt;UserRegisteredEvent&gt; registeredTopic;
+
+    <span class="ann">@KoAPI</span>(method = <span class="str">"POST"</span>, path = <span class="str">"/users"</span>)
+    <span class="kw">public</span> <span class="type">UserResponse</span> <span class="fn">createUser</span>(<span class="type">CreateUserRequest</span> req) {
+        <span class="type">User</span> user = db.<span class="fn">exec</span>(conn -&gt;
+            conn.<span class="fn">insertReturning</span>(
+                <span class="str">"INSERT INTO users (name, email) VALUES (?, ?)"</span>,
+                req.name(), req.email()
+            )
+        );
+        registeredTopic.<span class="fn">publish</span>(<span class="kw">new</span> <span class="type">UserRegisteredEvent</span>(user.id()));
+        <span class="kw">return</span> UserResponse.<span class="fn">from</span>(user);
+    }
+
+    <span class="ann">@KoAPI</span>(method = <span class="str">"GET"</span>, path = <span class="str">"/users/:id"</span>)
+    <span class="kw">public</span> <span class="type">UserResponse</span> <span class="fn">getUser</span>(<span class="ann">@PathParam</span>(<span class="str">"id"</span>) <span class="type">String</span> id) {
+        <span class="kw">return</span> db.<span class="fn">queryOne</span>(<span class="str">"SELECT * FROM users WHERE id = ?"</span>, id)
+            .<span class="fn">map</span>(UserResponse::<span class="fn">from</span>)
+            .<span class="fn">orElseThrow</span>(() -&gt; <span class="type">KoError</span>.<span class="fn">notFound</span>(<span class="str">"User not found"</span>));
+    }
+}</pre>
+        </div>
+        <div class="code-block" style="margin-top:1rem;">
+          <div class="code-header">
+            <span class="code-filename">Terminal</span>
+            <span class="code-lang">Shell</span>
+          </div>
+          <pre><span class="cmt"># Start with auto-provisioned infrastructure</span>
+$ ko run
+<span class="green">&#10004;</span> Starting PostgreSQL (users)...     Done!
+<span class="green">&#10004;</span> Starting Kafka (user-registered)... Done!
+<span class="green">&#10004;</span> Running migrations...               Done!
+
+  API:        http://localhost:8080
+  Dashboard:  http://localhost:9400</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Primitives -->
+  <div class="landing-section">
+    <div class="container">
+      <div class="landing-section-header">
+        <h2>Infrastructure primitives<span class="accent">.</span></h2>
+        <p>Declare what your application needs. The framework resolves the rest.</p>
+      </div>
+      <div class="primitives-row">
+        <span class="primitive-tag" data-nav="services">@KoService <span class="map">&rarr; microservice</span></span>
+        <span class="primitive-tag" data-nav="apis">@KoAPI <span class="map">&rarr; HTTP endpoint</span></span>
+        <span class="primitive-tag" data-nav="databases">@KoDatabase <span class="map">&rarr; SQL database</span></span>
+        <span class="primitive-tag" data-nav="pubsub">@KoPubSub <span class="map">&rarr; message topic</span></span>
+        <span class="primitive-tag" data-nav="caching">@KoCache <span class="map">&rarr; key-value cache</span></span>
+        <span class="primitive-tag" data-nav="cron">@KoCron <span class="map">&rarr; scheduled job</span></span>
+        <span class="primitive-tag" data-nav="storage">@KoBucket <span class="map">&rarr; object storage</span></span>
+        <span class="primitive-tag" data-nav="secrets">@KoSecret <span class="map">&rarr; application secret</span></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="landing-footer">
+    <div class="landing-footer-logo">Ko&#x323;&#x301;<span class="dot">.</span></div>
+    <div class="landing-footer-links">
+      <a href="#introduction" data-nav="introduction">Documentation</a>
+      <a href="https://github.com/nicholasadamou/ko" target="_blank">GitHub</a>
+      <a href="#architecture" data-nav="architecture">Architecture</a>
+    </div>
+    <div class="landing-footer-copy">MPL-2.0 &middot; Mediawind</div>
+  </footer>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- DOCS VIEW                                       -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="docs-wrapper" id="docsView" style="display:none">
+
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo logo-link">Ko&#x323;&#x301;<span class="dot">.</span></div>
+      <div class="sidebar-version">v0.1.0-SNAPSHOT</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-group">
+        <div class="sidebar-group-title">Getting Started</div>
+        <a class="sidebar-link active" data-page="introduction">Introduction</a>
+        <a class="sidebar-link" data-page="quickstart">Quickstart</a>
+        <a class="sidebar-link" data-page="installation">Installation</a>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-title">Core Concepts</div>
+        <a class="sidebar-link" data-page="services">Services</a>
+        <a class="sidebar-link" data-page="apis">APIs &amp; Endpoints</a>
+        <a class="sidebar-link" data-page="app-model">Application Model</a>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-title">Infrastructure</div>
+        <a class="sidebar-link" data-page="databases">Databases</a>
+        <a class="sidebar-link" data-page="pubsub">Pub/Sub</a>
+        <a class="sidebar-link" data-page="caching">Caching</a>
+        <a class="sidebar-link" data-page="cron">Cron Jobs</a>
+        <a class="sidebar-link" data-page="storage">Object Storage</a>
+        <a class="sidebar-link" data-page="secrets">Secrets</a>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-title">Advanced</div>
+        <a class="sidebar-link" data-page="service-calls">Service-to-Service Calls</a>
+        <a class="sidebar-link" data-page="testing">Testing</a>
+        <a class="sidebar-link" data-page="configuration">Configuration</a>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-title">Reference</div>
+        <a class="sidebar-link" data-page="annotations">Annotation Reference</a>
+        <a class="sidebar-link" data-page="cli-ref">CLI Reference</a>
+        <a class="sidebar-link" data-page="architecture">Architecture</a>
+      </div>
+    </nav>
+  </aside>
+
+  <button class="mobile-toggle" id="mobileToggle">&#9776;</button>
+
+  <div class="docs-main">
+    <div class="topbar">
+      <div class="topbar-breadcrumb">
+        <span>Docs</span> / <strong id="breadcrumb">Introduction</strong>
+      </div>
+      <div class="topbar-actions">
+        <a class="github-link" href="https://github.com/nicholasadamou/ko" target="_blank">GitHub</a>
+      </div>
+    </div>
+
+    <div class="docs-content" id="pageContent">
+      <div style="padding:4rem 0;color:var(--text-dim);text-align:center;">Loading...</div>
+    </div>
+
+    <div class="docs-footer site-footer">
+      <p>KO&#x323;&#x301; FRAMEWORK &mdash; DOCUMENTATION v0.1.0</p>
+    </div>
+  </div>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

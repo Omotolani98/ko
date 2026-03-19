@@ -1,0 +1,50 @@
+      <div class="page-badge"><span>&#8646;</span> Advanced</div>
+      <h1>Service-to-Service Calls<span class="accent">.</span></h1>
+      <p class="page-lead">
+        Call other services with <strong>type-safe generated clients</strong>. Same code works
+        as in-process calls locally and HTTP calls in production.
+      </p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename">Using a service client</span>
+          <span class="code-lang">Java</span>
+        </div>
+        <pre><span class="ann">@KoService</span>(<span class="str">"notification-service"</span>)
+<span class="kw">public class</span> <span class="type">NotificationService</span> {
+
+    <span class="ann">@KoServiceClient</span>
+    <span class="kw">private</span> <span class="type">UserServiceClient</span> userService;  <span class="cmt">// Auto-generated</span>
+
+    <span class="ann">@KoSubscribe</span>(topic = <span class="str">"order-placed"</span>, name = <span class="str">"notify-user"</span>)
+    <span class="kw">public void</span> <span class="fn">onOrderPlaced</span>(<span class="type">OrderPlacedEvent</span> event) {
+        <span class="cmt">// Type-safe call to user-service &mdash; no HTTP boilerplate</span>
+        <span class="type">UserResponse</span> user = userService.<span class="fn">getUser</span>(event.userId());
+        sendEmail(user.email(), <span class="str">"Your order has been placed!"</span>);
+    }
+}</pre>
+      </div>
+
+      <div class="flow-diagram">
+        <div class="flow-label">How service calls are routed</div>
+        <div class="flow-row">
+          <div class="flow-box amber">Service Client</div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-box purple">KoServiceCaller</div>
+        </div>
+        <div class="flow-arrow down">&darr;</div>
+        <div class="flow-row">
+          <div class="flow-box green">Local: InProcessCaller<br><span style="font-size:0.65rem;opacity:0.7">Direct method invocation</span></div>
+          <div class="flow-box red">Prod: HttpServiceCaller<br><span style="font-size:0.65rem;opacity:0.7">HTTP via service discovery</span></div>
+        </div>
+      </div>
+
+      <div class="prose">
+        <p>
+          The <strong>KoServiceCaller</strong> interface routes calls based on the environment.
+          Locally, when all services run in a single JVM, <code>InProcessCaller</code> invokes
+          the target method directly &mdash; no network hop. In production, <code>HttpServiceCaller</code>
+          resolves the target URL from <code>service_discovery</code> in <code>infra-config.json</code>
+          and makes an HTTP call. Your code never changes.
+        </p>
+      </div>

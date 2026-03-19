@@ -1,0 +1,61 @@
+      <div class="page-badge"><span>&#8644;</span> Infrastructure</div>
+      <h1>Pub/Sub<span class="accent">.</span></h1>
+      <p class="page-lead">
+        Declare message topics with <code>@KoPubSub</code> and subscribe with <code>@KoSubscribe</code>.
+        The framework handles serialization, delivery guarantees, retries, and dead-letter queues.
+      </p>
+
+      <h2>Publishing</h2>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename">Publishing events</span>
+          <span class="code-lang">Java</span>
+        </div>
+        <pre><span class="ann">@KoPubSub</span>(topic = <span class="str">"order-placed"</span>, delivery = DeliveryGuarantee.AT_LEAST_ONCE)
+<span class="kw">private</span> <span class="type">KoTopic</span>&lt;OrderPlacedEvent&gt; orderTopic;
+
+<span class="cmt">// Later in your code...</span>
+orderTopic.<span class="fn">publish</span>(<span class="kw">new</span> <span class="type">OrderPlacedEvent</span>(order.id(), order.total()));</pre>
+      </div>
+
+      <h2>Subscribing</h2>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename">Subscribing to events</span>
+          <span class="code-lang">Java</span>
+        </div>
+        <pre><span class="ann">@KoSubscribe</span>(topic = <span class="str">"order-placed"</span>, name = <span class="str">"send-confirmation"</span>,
+             maxRetries = <span class="num">5</span>, deadLetter = <span class="kw">true</span>)
+<span class="kw">public void</span> <span class="fn">onOrderPlaced</span>(<span class="type">OrderPlacedEvent</span> event) {
+    emailService.<span class="fn">sendConfirmation</span>(event.orderId());
+}</pre>
+      </div>
+
+      <h2>Delivery Guarantees</h2>
+
+      <table class="mapping-table">
+        <thead>
+          <tr><th>Guarantee</th><th>Behavior</th><th>Use Case</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>AT_LEAST_ONCE</td><td>Message delivered one or more times. Subscriber must be idempotent.</td><td>Most use cases (default)</td></tr>
+          <tr><td>AT_MOST_ONCE</td><td>Message delivered zero or one times. May be lost on failure.</td><td>Analytics, non-critical notifications</td></tr>
+          <tr><td>EXACTLY_ONCE</td><td>Message delivered exactly once (transactional where supported).</td><td>Financial transactions, inventory</td></tr>
+        </tbody>
+      </table>
+
+      <h2>@KoSubscribe Attributes</h2>
+
+      <table class="mapping-table">
+        <thead>
+          <tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>topic</td><td>String</td><td>&mdash;</td><td>Topic name to subscribe to</td></tr>
+          <tr><td>name</td><td>String</td><td>method name</td><td>Subscription name (for consumer group identity)</td></tr>
+          <tr><td>maxRetries</td><td>int</td><td>3</td><td>Max retry attempts before dead-lettering</td></tr>
+          <tr><td>deadLetter</td><td>boolean</td><td>true</td><td>Whether to use a dead-letter queue</td></tr>
+        </tbody>
+      </table>

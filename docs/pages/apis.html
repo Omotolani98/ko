@@ -1,0 +1,111 @@
+      <div class="page-badge"><span>&#8596;</span> Core Concepts</div>
+      <h1>APIs &amp; Endpoints<span class="accent">.</span></h1>
+      <p class="page-lead">
+        Define type-safe HTTP endpoints with <code>@KoAPI</code>. Request and response types
+        are extracted from method signatures &mdash; no DTOs, no mapping, no boilerplate.
+      </p>
+
+      <h2>Basic API</h2>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename">ProductService.java</span>
+          <span class="code-lang">Java</span>
+        </div>
+        <pre><span class="cmt">/** List all products in the catalog. */</span>
+<span class="ann">@KoAPI</span>(method = <span class="str">"GET"</span>, path = <span class="str">"/products"</span>)
+<span class="kw">public</span> <span class="type">List</span>&lt;<span class="type">ProductResponse</span>&gt; <span class="fn">listProducts</span>() {
+    <span class="kw">return</span> db.<span class="fn">query</span>(<span class="str">"SELECT * FROM products"</span>)
+        .<span class="fn">stream</span>()
+        .<span class="fn">map</span>(ProductResponse::<span class="fn">from</span>)
+        .<span class="fn">toList</span>();
+}
+
+<span class="cmt">/** Create a new product. Requires authentication. */</span>
+<span class="ann">@KoAPI</span>(method = <span class="str">"POST"</span>, path = <span class="str">"/products"</span>, auth = <span class="kw">true</span>,
+       permissions = {<span class="str">"PRODUCT:CREATE"</span>})
+<span class="kw">public</span> <span class="type">ProductResponse</span> <span class="fn">createProduct</span>(<span class="type">CreateProductRequest</span> req) {
+    <span class="cmt">// Request body automatically deserialized from JSON</span>
+    <span class="cmt">// ...</span>
+}</pre>
+      </div>
+
+      <h2>Path Parameters</h2>
+
+      <div class="prose">
+        <p>
+          Use <code>:paramName</code> syntax in the path and annotate the corresponding
+          method parameter with <code>@PathParam</code>. The processor validates that every
+          path parameter has a matching method parameter.
+        </p>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename">Path parameters</span>
+          <span class="code-lang">Java</span>
+        </div>
+        <pre><span class="ann">@KoAPI</span>(method = <span class="str">"GET"</span>, path = <span class="str">"/products/:id"</span>)
+<span class="kw">public</span> <span class="type">ProductResponse</span> <span class="fn">getProduct</span>(<span class="ann">@PathParam</span>(<span class="str">"id"</span>) <span class="type">String</span> id) {
+    <span class="cmt">// ...</span>
+}
+
+<span class="ann">@KoAPI</span>(method = <span class="str">"PUT"</span>, path = <span class="str">"/products/:id/reviews/:reviewId"</span>)
+<span class="kw">public</span> <span class="type">ReviewResponse</span> <span class="fn">updateReview</span>(
+    <span class="ann">@PathParam</span>(<span class="str">"id"</span>) <span class="type">String</span> productId,
+    <span class="ann">@PathParam</span>(<span class="str">"reviewId"</span>) <span class="type">String</span> reviewId,
+    <span class="type">UpdateReviewRequest</span> req
+) {
+    <span class="cmt">// Non-path parameters are treated as the request body</span>
+}</pre>
+      </div>
+
+      <h2>Annotation Attributes</h2>
+
+      <table class="mapping-table">
+        <thead>
+          <tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>method</td><td>String</td><td><code>"GET"</code></td><td>HTTP method (GET, POST, PUT, DELETE, PATCH)</td></tr>
+          <tr><td>path</td><td>String</td><td>&mdash;</td><td>URL path with optional <code>:param</code> segments</td></tr>
+          <tr><td>auth</td><td>boolean</td><td><code>false</code></td><td>Whether authentication is required</td></tr>
+          <tr><td>permissions</td><td>String[]</td><td><code>{}</code></td><td>Required permissions (implies auth=true)</td></tr>
+          <tr><td>expose</td><td>boolean</td><td><code>true</code></td><td>Whether the endpoint is public or service-internal</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Request &amp; Response Types</h2>
+
+      <div class="prose">
+        <p>
+          Ko&#x323;&#x301; extracts type information from your method signatures. Use <strong>Java records</strong>
+          for request and response types &mdash; their fields are automatically included in the Application Model
+          and used to generate OpenAPI specs, TypeScript clients, and API documentation.
+        </p>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename">Request and response records</span>
+          <span class="code-lang">Java</span>
+        </div>
+        <pre><span class="kw">public record</span> <span class="type">CreateProductRequest</span>(
+    <span class="type">String</span> name,
+    <span class="type">String</span> description,
+    <span class="type">BigDecimal</span> price,
+    <span class="type">List</span>&lt;<span class="type">String</span>&gt; tags
+) {}
+
+<span class="kw">public record</span> <span class="type">ProductResponse</span>(
+    <span class="type">String</span> id,
+    <span class="type">String</span> name,
+    <span class="type">String</span> description,
+    <span class="type">BigDecimal</span> price,
+    <span class="type">Instant</span> createdAt
+) {
+    <span class="kw">public static</span> <span class="type">ProductResponse</span> <span class="fn">from</span>(<span class="type">Product</span> p) {
+        <span class="kw">return new</span> <span class="type">ProductResponse</span>(p.id(), p.name(), p.description(), p.price(), p.createdAt());
+    }
+}</pre>
+      </div>

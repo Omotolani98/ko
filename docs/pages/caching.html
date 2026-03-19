@@ -1,0 +1,35 @@
+      <div class="page-badge"><span>&#9889;</span> Infrastructure</div>
+      <h1>Caching<span class="accent">.</span></h1>
+      <p class="page-lead">
+        Declare named caches with <code>@KoCache</code>. Locally backed by <code>ConcurrentHashMap</code>,
+        in production by Redis or Memcached.
+      </p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename">Using a cache</span>
+          <span class="code-lang">Java</span>
+        </div>
+        <pre><span class="ann">@KoCache</span>(name = <span class="str">"product-cache"</span>, keyType = String.<span class="kw">class</span>, ttl = <span class="num">900</span>)
+<span class="kw">private</span> <span class="type">KoCache</span>&lt;String, ProductResponse&gt; cache;
+
+<span class="ann">@KoAPI</span>(method = <span class="str">"GET"</span>, path = <span class="str">"/products/:id"</span>)
+<span class="kw">public</span> <span class="type">ProductResponse</span> <span class="fn">getProduct</span>(<span class="ann">@PathParam</span>(<span class="str">"id"</span>) <span class="type">String</span> id) {
+    <span class="kw">return</span> cache.<span class="fn">getOrSet</span>(id, () -&gt;
+        db.<span class="fn">queryOne</span>(<span class="str">"SELECT * FROM products WHERE id = ?"</span>, id)
+          .<span class="fn">map</span>(ProductResponse::<span class="fn">from</span>)
+          .<span class="fn">orElseThrow</span>(() -&gt; <span class="type">KoError</span>.<span class="fn">notFound</span>(<span class="str">"Product not found"</span>))
+    );
+}</pre>
+      </div>
+
+      <table class="mapping-table">
+        <thead>
+          <tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>name</td><td>String</td><td>&mdash;</td><td>Unique cache name (kebab-case)</td></tr>
+          <tr><td>keyType</td><td>Class&lt;?&gt;</td><td>String.class</td><td>Type of the cache key</td></tr>
+          <tr><td>ttl</td><td>long</td><td>300</td><td>Time-to-live in seconds</td></tr>
+        </tbody>
+      </table>

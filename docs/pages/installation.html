@@ -1,0 +1,89 @@
+      <div class="page-badge"><span>&#9881;</span> Getting Started</div>
+      <h1>Installation<span class="accent">.</span></h1>
+      <p class="page-lead">
+        Requirements and setup for using Ko&#x323;&#x301; in your Java project.
+      </p>
+
+      <h2>Requirements</h2>
+
+      <div class="card-grid triple">
+        <div class="card">
+          <div class="card-icon amber">&#9752;</div>
+          <h3>Java 21+</h3>
+          <p>Ko&#x323;&#x301; uses records, sealed interfaces, pattern matching, and virtual threads.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon green">&#9881;</div>
+          <h3>Gradle 8.12+</h3>
+          <p>The Ko&#x323;&#x301; Gradle plugin requires Gradle 8.12 or later with version catalogs support.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon blue">&#9638;</div>
+          <h3>Docker (optional)</h3>
+          <p>Required for <code>ko run</code> with Testcontainers. Not needed for compile-time features.</p>
+        </div>
+      </div>
+
+      <h2>Gradle Setup</h2>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename">settings.gradle.kts</span>
+          <span class="code-lang">Kotlin DSL</span>
+        </div>
+        <pre><span class="kw">pluginManagement</span> {
+    <span class="kw">repositories</span> {
+        <span class="fn">mavenCentral</span>()
+        <span class="fn">gradlePluginPortal</span>()
+    }
+}
+
+rootProject.name = <span class="str">"my-project"</span></pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename">build.gradle.kts</span>
+          <span class="code-lang">Kotlin DSL</span>
+        </div>
+        <pre><span class="kw">plugins</span> {
+    <span class="fn">id</span>(<span class="str">"dev.ko"</span>) <span class="fn">version</span> <span class="str">"0.1.0-SNAPSHOT"</span>
+}
+
+<span class="fn">ko</span> {
+    appName.<span class="fn">set</span>(<span class="str">"my-app"</span>)
+}
+
+<span class="kw">java</span> {
+    <span class="kw">toolchain</span> {
+        languageVersion.<span class="fn">set</span>(JavaLanguageVersion.<span class="fn">of</span>(<span class="num">21</span>))
+    }
+}</pre>
+      </div>
+
+      <h2>Version Catalog (optional)</h2>
+
+      <div class="prose">
+        <p>
+          If you manage dependencies via <code>gradle/libs.versions.toml</code>, add the Ko&#x323;&#x301;
+          entries alongside your other dependencies.
+        </p>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename">gradle/libs.versions.toml</span>
+          <span class="code-lang">TOML</span>
+        </div>
+        <pre><span class="kw">[versions]</span>
+ko = <span class="str">"0.1.0-SNAPSHOT"</span>
+
+<span class="kw">[libraries]</span>
+ko-annotations = { module = <span class="str">"dev.ko:ko-annotations"</span>, version.ref = <span class="str">"ko"</span> }
+ko-processor   = { module = <span class="str">"dev.ko:ko-processor"</span>,   version.ref = <span class="str">"ko"</span> }
+ko-runtime     = { module = <span class="str">"dev.ko:ko-runtime"</span>,     version.ref = <span class="str">"ko"</span> }
+ko-test        = { module = <span class="str">"dev.ko:ko-test"</span>,        version.ref = <span class="str">"ko"</span> }
+
+<span class="kw">[plugins]</span>
+ko = { id = <span class="str">"dev.ko"</span>, version.ref = <span class="str">"ko"</span> }</pre>
+      </div>

@@ -1,0 +1,52 @@
+      <div class="page-badge"><span>&#9881;</span> Advanced</div>
+      <h1>Configuration<span class="accent">.</span></h1>
+      <p class="page-lead">
+        Ko&#x323;&#x301; uses two configuration files: <code>ko-app-model.json</code> (generated,
+        read-only) and <code>infra-config.json</code> (environment-specific, maps logical resources
+        to physical infrastructure).
+      </p>
+
+      <h2>infra-config.json</h2>
+
+      <div class="prose">
+        <p>
+          This file tells the runtime <strong>where</strong> each declared resource lives. Locally, the CLI
+          generates it automatically from Testcontainer addresses. In production, you provide it with real
+          connection strings.
+        </p>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename">infra-config.json (production)</span>
+          <span class="code-lang">JSON</span>
+        </div>
+        <pre>{
+  <span class="str">"metadata"</span>: {
+    <span class="str">"app_id"</span>: <span class="str">"my-app"</span>,
+    <span class="str">"env_name"</span>: <span class="str">"production"</span>,
+    <span class="str">"env_type"</span>: <span class="str">"production"</span>,
+    <span class="str">"cloud"</span>: <span class="str">"aws"</span>
+  },
+  <span class="str">"sql_servers"</span>: [{
+    <span class="str">"host"</span>: <span class="str">"db.internal:5432"</span>,
+    <span class="str">"databases"</span>: {
+      <span class="str">"inventory"</span>: {
+        <span class="str">"username"</span>: <span class="str">"app"</span>,
+        <span class="str">"password"</span>: { <span class="str">"$env"</span>: <span class="str">"DB_PASSWORD"</span> }
+      }
+    }
+  }],
+  <span class="str">"redis"</span>: {
+    <span class="str">"product-cache"</span>: { <span class="str">"host"</span>: <span class="str">"redis.internal:6379"</span> }
+  },
+  <span class="str">"service_discovery"</span>: {
+    <span class="str">"user-service"</span>: { <span class="str">"base_url"</span>: <span class="str">"http://user-svc.internal:8080"</span> }
+  }
+}</pre>
+      </div>
+
+      <div class="callout">
+        <div class="callout-title">Environment Variable References</div>
+        <p>Use <code>{"$env": "VAR_NAME"}</code> in infra-config.json to reference environment variables. The runtime resolves these at startup &mdash; secrets never appear in config files.</p>
+      </div>

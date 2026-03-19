@@ -1,0 +1,125 @@
+      <div class="page-badge"><span>&#9654;</span> Getting Started</div>
+      <h1>Quickstart<span class="accent">.</span></h1>
+      <p class="page-lead">
+        Get a Ko&#x323;&#x301; service running in under five minutes. You'll define a service,
+        add an API endpoint and a database, then watch the framework wire everything together.
+      </p>
+
+      <div class="steps">
+        <div class="step">
+          <h4>Create a new Gradle project</h4>
+          <p>Use the standard Gradle init or your IDE to scaffold a Java 21 project.</p>
+        </div>
+        <div class="step">
+          <h4>Apply the Ko&#x323;&#x301; Gradle plugin</h4>
+          <p>The plugin adds annotation processing and model generation to your build.</p>
+        </div>
+        <div class="step">
+          <h4>Define your first service</h4>
+          <p>Annotate a class with <code>@KoService</code> and add methods with <code>@KoAPI</code>.</p>
+        </div>
+        <div class="step">
+          <h4>Build and inspect the model</h4>
+          <p>Run <code>./gradlew build</code> and find <code>ko-app-model.json</code> in your build output.</p>
+        </div>
+      </div>
+
+      <h2>1. Apply the plugin</h2>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename">build.gradle.kts</span>
+          <span class="code-lang">Kotlin DSL</span>
+        </div>
+        <pre><span class="kw">plugins</span> {
+    <span class="fn">id</span>(<span class="str">"dev.ko"</span>)
+}
+
+<span class="fn">ko</span> {
+    appName.<span class="fn">set</span>(<span class="str">"my-app"</span>)
+}
+
+<span class="kw">dependencies</span> {
+    <span class="fn">implementation</span>(<span class="str">"dev.ko:ko-annotations:0.1.0-SNAPSHOT"</span>)
+    <span class="fn">annotationProcessor</span>(<span class="str">"dev.ko:ko-processor:0.1.0-SNAPSHOT"</span>)
+}</pre>
+      </div>
+
+      <div class="callout tip">
+        <div class="callout-title">Tip</div>
+        <p>The Ko&#x323;&#x301; Gradle plugin automatically adds the annotation and processor dependencies, sets the <code>-parameters</code> compiler flag, and registers the model generation task.</p>
+      </div>
+
+      <h2>2. Write your first service</h2>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename">GreetingService.java</span>
+          <span class="code-lang">Java</span>
+        </div>
+        <pre><span class="kw">package</span> com.example;
+
+<span class="kw">import</span> dev.ko.annotations.*;
+
+<span class="ann">@KoService</span>(<span class="str">"greeting-service"</span>)
+<span class="kw">public class</span> <span class="type">GreetingService</span> {
+
+    <span class="cmt">/** Say hello to someone. */</span>
+    <span class="ann">@KoAPI</span>(method = <span class="str">"GET"</span>, path = <span class="str">"/hello/:name"</span>)
+    <span class="kw">public</span> <span class="type">GreetingResponse</span> <span class="fn">hello</span>(<span class="ann">@PathParam</span>(<span class="str">"name"</span>) <span class="type">String</span> name) {
+        <span class="kw">return new</span> <span class="type">GreetingResponse</span>(<span class="str">"Hello, "</span> + name + <span class="str">"!"</span>);
+    }
+}
+
+<span class="kw">public record</span> <span class="type">GreetingResponse</span>(<span class="type">String</span> message) {}</pre>
+      </div>
+
+      <h2>3. Build</h2>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename">Terminal</span>
+          <span class="code-lang">Shell</span>
+        </div>
+        <pre>$ ./gradlew build
+
+<span class="green">BUILD SUCCESSFUL</span>
+
+$ cat build/ko/ko-app-model.json</pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename">build/ko/ko-app-model.json</span>
+          <span class="code-lang">JSON</span>
+        </div>
+        <pre>{
+  <span class="str">"schema"</span>: <span class="str">"1.0"</span>,
+  <span class="str">"app"</span>: <span class="str">"my-app"</span>,
+  <span class="str">"services"</span>: [
+    {
+      <span class="str">"name"</span>: <span class="str">"greeting-service"</span>,
+      <span class="str">"class_name"</span>: <span class="str">"com.example.GreetingService"</span>,
+      <span class="str">"apis"</span>: [
+        {
+          <span class="str">"name"</span>: <span class="str">"hello"</span>,
+          <span class="str">"method"</span>: <span class="str">"GET"</span>,
+          <span class="str">"path"</span>: <span class="str">"/hello/:name"</span>,
+          <span class="str">"javadoc"</span>: <span class="str">"Say hello to someone."</span>,
+          <span class="str">"response_type"</span>: {
+            <span class="str">"class_name"</span>: <span class="str">"com.example.GreetingResponse"</span>,
+            <span class="str">"fields"</span>: [
+              { <span class="str">"name"</span>: <span class="str">"message"</span>, <span class="str">"type"</span>: <span class="str">"java.lang.String"</span> }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}</pre>
+      </div>
+
+      <div class="callout info">
+        <div class="callout-title">What just happened?</div>
+        <p>The annotation processor scanned your <code>@KoService</code> class at compile time, extracted the API endpoints, request/response types, and Javadoc, then serialized everything into a structured Application Model. This model is the foundation for runtime wiring, documentation generation, and the dev dashboard.</p>
+      </div>

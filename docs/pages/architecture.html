@@ -1,0 +1,88 @@
+      <div class="page-badge"><span>&#9635;</span> Reference</div>
+      <h1>Architecture<span class="accent">.</span></h1>
+      <p class="page-lead">
+        How the Ko&#x323;&#x301; framework is structured internally &mdash; modules, data flow,
+        and the provider interface pattern.
+      </p>
+
+      <h2>Data Flow</h2>
+
+      <div class="flow-diagram">
+        <div class="flow-label">Annotated source code to running infrastructure</div>
+        <div class="flow-row">
+          <div class="flow-box amber">@Ko* Annotations</div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-box blue">Annotation Processor</div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-box purple">ko-app-model.json</div>
+        </div>
+        <div class="flow-arrow down">&darr;</div>
+        <div class="flow-label">Consumed by every downstream tool</div>
+        <div class="flow-row">
+          <div class="flow-box green">Runtime Engine</div>
+          <div class="flow-box green">CLI (ko run)</div>
+          <div class="flow-box green">Dev Dashboard</div>
+          <div class="flow-box green">Code Generator</div>
+        </div>
+        <div class="flow-arrow down">&darr;</div>
+        <div class="flow-label">Infrastructure resolved per environment</div>
+        <div class="flow-row">
+          <div class="flow-box red">Local (Testcontainers)</div>
+          <div class="flow-box red">Docker (Self-hosted)</div>
+          <div class="flow-box red">Cloud (AWS / GCP)</div>
+        </div>
+      </div>
+
+      <h2>Module Dependency Chain</h2>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename">Module hierarchy</span>
+          <span class="code-lang">Text</span>
+        </div>
+        <pre><span class="ann">ko-annotations</span>       <span class="cmt">zero deps &mdash; pure annotation definitions</span>
+      &uarr;
+<span class="ann">ko-processor</span>         <span class="cmt">ko-annotations, JavaPoet, Jackson</span>
+      &uarr;
+<span class="ann">ko-runtime</span>           <span class="cmt">ko-annotations, Spring Boot, HikariCP, providers</span>
+      &uarr;
+<span class="ann">ko-gradle-plugin</span>     <span class="cmt">ko-processor</span>
+      &uarr;
+<span class="ann">ko-test</span>              <span class="cmt">ko-runtime, JUnit 5, Testcontainers</span>
+      &uarr;
+<span class="ann">ko-e2e-tests</span>         <span class="cmt">ko-test, all provider modules</span></pre>
+      </div>
+
+      <h2>Provider Interface Pattern</h2>
+
+      <div class="prose">
+        <p>
+          Every infrastructure primitive follows the same pattern: a <strong>provider interface</strong>
+          defines the contract, an <strong>in-memory implementation</strong> handles local dev and tests,
+          <strong>production implementations</strong> handle real infrastructure (Kafka, Redis, S3, etc.),
+          and <strong>auto-configuration</strong> selects the right one based on <code>infra-config.json</code>.
+        </p>
+      </div>
+
+      <div class="card-grid">
+        <div class="card">
+          <div class="card-icon purple">I</div>
+          <h3>Provider Interface</h3>
+          <p>Defines the contract: <code>KoPubSubProvider</code>, <code>KoDatabaseProvider</code>, <code>KoCacheProvider</code>, etc.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon green">L</div>
+          <h3>Local Implementation</h3>
+          <p>In-memory: <code>InMemoryPubSubProvider</code>, <code>ConcurrentHashMapCache</code>, etc. Used in dev and tests.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon red">P</div>
+          <h3>Production Implementations</h3>
+          <p>Real infra: <code>KafkaPubSubProvider</code>, <code>RedisCache</code>, <code>S3BucketProvider</code>. Separate modules.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon amber">A</div>
+          <h3>Auto-Configuration</h3>
+          <p>Spring Boot auto-config reads <code>infra-config.json</code> and wires the correct provider bean per resource.</p>
+        </div>
+      </div>

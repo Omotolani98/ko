@@ -1,0 +1,45 @@
+      <div class="page-badge"><span>&#10003;</span> Advanced</div>
+      <h1>Testing<span class="accent">.</span></h1>
+      <p class="page-lead">
+        Ko&#x323;&#x301; provides a JUnit 5 extension that manages infrastructure lifecycle,
+        provisions isolated Testcontainers per test, and offers mock service clients.
+      </p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename">InventoryServiceTest.java</span>
+          <span class="code-lang">Java</span>
+        </div>
+        <pre><span class="ann">@ExtendWith</span>(<span class="type">KoTestExtension</span>.<span class="kw">class</span>)
+<span class="kw">class</span> <span class="type">InventoryServiceTest</span> {
+
+    <span class="ann">@KoInject</span>
+    <span class="type">InventoryService</span> service;
+
+    <span class="ann">@KoInject</span>
+    <span class="type">KoSQLDatabase</span> db;
+
+    <span class="ann">@Test</span>
+    <span class="kw">void</span> <span class="fn">getStock_existingSku_returnsQuantity</span>() {
+        <span class="cmt">// Given: seed test data</span>
+        db.<span class="fn">exec</span>(<span class="str">"INSERT INTO stock (sku, quantity) VALUES ('ABC-123', 42)"</span>);
+
+        <span class="cmt">// When</span>
+        <span class="type">StockResponse</span> result = service.<span class="fn">getStock</span>(<span class="str">"ABC-123"</span>);
+
+        <span class="cmt">// Then</span>
+        assertThat(result.quantity()).<span class="fn">isEqualTo</span>(<span class="num">42</span>);
+    }
+
+    <span class="ann">@Test</span>
+    <span class="kw">void</span> <span class="fn">getStock_unknownSku_throwsNotFound</span>() {
+        assertThatThrownBy(() -&gt; service.<span class="fn">getStock</span>(<span class="str">"UNKNOWN"</span>))
+            .<span class="fn">isInstanceOf</span>(<span class="type">KoError</span>.<span class="kw">class</span>);
+    }
+}</pre>
+      </div>
+
+      <div class="callout tip">
+        <div class="callout-title">Test Naming Convention</div>
+        <p>Follow <code>MethodUnderTest_StateOrInput_ExpectedBehavior</code> for test method names, e.g. <code>publish_validMessage_deliveredToSubscriber</code>.</p>
+      </div>

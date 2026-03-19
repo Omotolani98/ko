@@ -1,0 +1,51 @@
+      <div class="page-badge"><span>&#9200;</span> Infrastructure</div>
+      <h1>Cron Jobs<span class="accent">.</span></h1>
+      <p class="page-lead">
+        Schedule recurring work with <code>@KoCron</code>. Validated at compile time.
+      </p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename">Cron job examples</span>
+          <span class="code-lang">Java</span>
+        </div>
+        <pre><span class="cmt">// Every day at 3 AM</span>
+<span class="ann">@KoCron</span>(schedule = <span class="str">"0 3 * * *"</span>, name = <span class="str">"daily-cleanup"</span>)
+<span class="kw">public void</span> <span class="fn">dailyCleanup</span>() { <span class="cmt">/* ... */</span> }
+
+<span class="cmt">// Every 15 minutes</span>
+<span class="ann">@KoCron</span>(schedule = <span class="str">"*/15 * * * *"</span>, name = <span class="str">"sync-inventory"</span>)
+<span class="kw">public void</span> <span class="fn">syncInventory</span>() { <span class="cmt">/* ... */</span> }
+
+<span class="cmt">// Weekdays at 9 AM</span>
+<span class="ann">@KoCron</span>(schedule = <span class="str">"0 9 * * MON-FRI"</span>, name = <span class="str">"send-digest"</span>)
+<span class="kw">public void</span> <span class="fn">sendDailyDigest</span>() { <span class="cmt">/* ... */</span> }</pre>
+      </div>
+
+      <h2>Cron Expression Format</h2>
+
+      <div class="prose">
+        <p>
+          Ko&#x323;&#x301; uses standard <strong>5-field cron expressions</strong>. The processor validates
+          these at compile time &mdash; invalid expressions fail the build.
+        </p>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename">Cron format</span>
+          <span class="code-lang">Text</span>
+        </div>
+        <pre>&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472; minute (0-59)
+&#9474; &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472; hour (0-23)
+&#9474; &#9474; &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472; day of month (1-31)
+&#9474; &#9474; &#9474; &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472; month (1-12 or JAN-DEC)
+&#9474; &#9474; &#9474; &#9474; &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472; day of week (0-7 or MON-SUN)
+&#9474; &#9474; &#9474; &#9474; &#9474;
+* * * * *</pre>
+      </div>
+
+      <div class="callout warn">
+        <div class="callout-title">Compile-Time Validation</div>
+        <p>Invalid cron expressions like <code>"60 * * * *"</code> (minute > 59) or <code>"* * *"</code> (wrong field count) will cause a build failure with a descriptive error message.</p>
+      </div>

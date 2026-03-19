@@ -1,0 +1,35 @@
+      <div class="page-badge"><span>&#9744;</span> Infrastructure</div>
+      <h1>Object Storage<span class="accent">.</span></h1>
+      <p class="page-lead">
+        Declare storage buckets with <code>@KoBucket</code>. Locally backed by MinIO or the filesystem,
+        in production by S3, GCS, or compatible stores.
+      </p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename">Using a bucket</span>
+          <span class="code-lang">Java</span>
+        </div>
+        <pre><span class="ann">@KoBucket</span>(name = <span class="str">"user-avatars"</span>, publicRead = <span class="kw">true</span>)
+<span class="kw">private</span> <span class="type">KoBucket</span> avatarBucket;
+
+<span class="ann">@KoAPI</span>(method = <span class="str">"POST"</span>, path = <span class="str">"/users/:id/avatar"</span>, auth = <span class="kw">true</span>)
+<span class="kw">public</span> <span class="type">AvatarResponse</span> <span class="fn">uploadAvatar</span>(
+    <span class="ann">@PathParam</span>(<span class="str">"id"</span>) <span class="type">String</span> userId,
+    <span class="type">UploadRequest</span> req
+) {
+    <span class="type">String</span> key = <span class="str">"avatars/"</span> + userId + <span class="str">".png"</span>;
+    avatarBucket.<span class="fn">put</span>(key, req.data(), <span class="str">"image/png"</span>);
+    <span class="kw">return new</span> <span class="type">AvatarResponse</span>(avatarBucket.<span class="fn">publicUrl</span>(key));
+}</pre>
+      </div>
+
+      <table class="mapping-table">
+        <thead>
+          <tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>name</td><td>String</td><td>&mdash;</td><td>Unique bucket name (kebab-case)</td></tr>
+          <tr><td>publicRead</td><td>boolean</td><td>false</td><td>Whether objects are publicly readable</td></tr>
+        </tbody>
+      </table>

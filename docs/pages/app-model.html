@@ -1,0 +1,84 @@
+      <div class="page-badge"><span>&#9733;</span> Core Concepts</div>
+      <h1>Application Model<span class="accent">.</span></h1>
+      <p class="page-lead">
+        The <strong>Application Model</strong> is the brain of Ko&#x323;&#x301; &mdash; a structured
+        JSON graph generated at compile time that captures every service, endpoint, database,
+        topic, and relationship in your application.
+      </p>
+
+      <div class="flow-diagram">
+        <div class="flow-label">The Application Model feeds every tool</div>
+        <div class="flow-row">
+          <div class="flow-box purple">ko-app-model.json</div>
+        </div>
+        <div class="flow-arrow down">&darr;</div>
+        <div class="flow-row">
+          <div class="flow-box green">Runtime<br>Engine</div>
+          <div class="flow-box blue">CLI<br>Tooling</div>
+          <div class="flow-box amber">Dev<br>Dashboard</div>
+          <div class="flow-box red">Code<br>Generator</div>
+        </div>
+      </div>
+
+      <h2>What It Contains</h2>
+
+      <div class="card-grid">
+        <div class="card">
+          <div class="card-icon amber">S</div>
+          <h3>Services</h3>
+          <p>Name, class, package, and all contained APIs, databases, pub/sub topics, caches, cron jobs, secrets, and buckets.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon blue">T</div>
+          <h3>Types</h3>
+          <p>Full field-level schema for every request and response record, including nested types.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon green">D</div>
+          <h3>Dependencies</h3>
+          <p>Service-to-service dependencies &mdash; API calls, shared pub/sub topics, and their direction.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon purple">I</div>
+          <h3>Infrastructure</h3>
+          <p>Aggregate list of all databases, pub/sub topics, caches, and other resources needed by the application.</p>
+        </div>
+      </div>
+
+      <h2>Schema Structure</h2>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename">ko-app-model.json (schema)</span>
+          <span class="code-lang">JSON</span>
+        </div>
+        <pre>{
+  <span class="str">"schema"</span>: <span class="str">"1.0"</span>,                  <span class="cmt">// Model schema version</span>
+  <span class="str">"version"</span>: <span class="str">"0.1.0-SNAPSHOT"</span>,     <span class="cmt">// App version</span>
+  <span class="str">"app"</span>: <span class="str">"my-app"</span>,                 <span class="cmt">// Application name</span>
+  <span class="str">"generated_at"</span>: <span class="str">"2026-..."</span>,      <span class="cmt">// ISO-8601 timestamp</span>
+  <span class="str">"services"</span>: [                    <span class="cmt">// All discovered services</span>
+    {
+      <span class="str">"name"</span>: <span class="str">"..."</span>,
+      <span class="str">"class_name"</span>: <span class="str">"..."</span>,
+      <span class="str">"package_name"</span>: <span class="str">"..."</span>,
+      <span class="str">"apis"</span>: [<span class="cmt">/* ApiEndpointModel[] */</span>],
+      <span class="str">"databases"</span>: [<span class="cmt">/* DatabaseModel[] */</span>],
+      <span class="str">"publishes"</span>: [<span class="cmt">/* topic names */</span>],
+      <span class="str">"subscribes"</span>: [<span class="cmt">/* topic names */</span>],
+      <span class="str">"caches"</span>: [<span class="cmt">/* CacheModel[] */</span>],
+      <span class="str">"cron_jobs"</span>: [<span class="cmt">/* CronJobModel[] */</span>],
+      <span class="str">"secrets"</span>: [<span class="cmt">/* SecretModel[] */</span>],
+      <span class="str">"buckets"</span>: [<span class="cmt">/* BucketModel[] */</span>]
+    }
+  ],
+  <span class="str">"pubsub_topics"</span>: [<span class="cmt">/* PubSubTopicModel[] */</span>],
+  <span class="str">"databases"</span>: [<span class="cmt">/* DatabaseModel[] */</span>],
+  <span class="str">"service_dependencies"</span>: [<span class="cmt">/* ServiceDependencyModel[] */</span>]
+}</pre>
+      </div>
+
+      <div class="callout">
+        <div class="callout-title">Design Principle</div>
+        <p>The Application Model uses <strong>snake_case</strong> for all JSON field names. This is configured via Jackson's <code>PropertyNamingStrategies.SNAKE_CASE</code> on the ObjectMapper, so Java records use standard camelCase field names while the JSON output is consistently snake_case.</p>
+      </div>
