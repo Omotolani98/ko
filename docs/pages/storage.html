@@ -1,7 +1,7 @@
       <div class="page-badge"><span>&#9744;</span> Infrastructure</div>
       <h1>Object Storage<span class="accent">.</span></h1>
       <p class="page-lead">
-        Declare storage buckets with <code>@KoBucket</code>. Locally backed by MinIO or the filesystem,
+        Declare storage buckets with <code>@KoBucket</code>. Locally backed by the filesystem,
         in production by S3, GCS, or compatible stores.
       </p>
 
@@ -19,10 +19,12 @@
     <span class="type">UploadRequest</span> req
 ) {
     <span class="type">String</span> key = <span class="str">"avatars/"</span> + userId + <span class="str">".png"</span>;
-    avatarBucket.<span class="fn">put</span>(key, req.data(), <span class="str">"image/png"</span>);
-    <span class="kw">return new</span> <span class="type">AvatarResponse</span>(avatarBucket.<span class="fn">publicUrl</span>(key));
+    avatarBucket.<span class="fn">upload</span>(key, req.data(), <span class="str">"image/png"</span>);
+    <span class="kw">return new</span> <span class="type">AvatarResponse</span>(key);
 }</pre>
       </div>
+
+      <h2>Annotation Attributes</h2>
 
       <table class="mapping-table">
         <thead>
@@ -33,3 +35,42 @@
           <tr><td>publicRead</td><td>boolean</td><td>false</td><td>Whether objects are publicly readable</td></tr>
         </tbody>
       </table>
+
+      <h2>API Methods</h2>
+
+      <table class="mapping-table">
+        <thead>
+          <tr><th>Method</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>upload(key, data, contentType)</td><td>Upload a byte array to the bucket</td></tr>
+          <tr><td>download(key)</td><td>Download an object as a byte array (null if not found)</td></tr>
+          <tr><td>delete(key)</td><td>Delete an object from the bucket</td></tr>
+          <tr><td>list(prefix)</td><td>List object keys matching a prefix</td></tr>
+          <tr><td>list()</td><td>List all object keys in the bucket</td></tr>
+          <tr><td>exists(key)</td><td>Check if an object exists</td></tr>
+        </tbody>
+      </table>
+
+      <h2>How It Works</h2>
+
+      <div class="flow-diagram">
+        <div class="flow-row">
+          <div class="flow-box amber">@KoBucket</div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-box blue">App Model</div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-box purple">Runtime resolves</div>
+        </div>
+        <div class="flow-arrow down">&darr;</div>
+        <div class="flow-label">Based on environment</div>
+        <div class="flow-row">
+          <div class="flow-box green">Local: filesystem ($TMPDIR/ko-storage)</div>
+          <div class="flow-box red">Prod: S3 / GCS / compatible</div>
+        </div>
+      </div>
+
+      <div class="callout tip">
+        <div class="callout-title">Tip</div>
+        <p>Each <code>@KoBucket</code> maps to a directory locally. Files are stored at <code>ko-storage/{bucket-name}/{key}</code> in your system's temp directory. In production, a different <code>KoStorageProvider</code> routes to S3, GCS, or another object store.</p>
+      </div>

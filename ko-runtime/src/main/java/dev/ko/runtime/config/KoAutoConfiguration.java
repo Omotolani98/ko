@@ -11,10 +11,14 @@ import dev.ko.runtime.database.KoMigrationRunner;
 import dev.ko.runtime.database.KoSQLDatabase;
 import dev.ko.runtime.database.LocalDatabaseProvider;
 import dev.ko.runtime.model.AppModel;
+import dev.ko.runtime.model.BucketModel;
 import dev.ko.runtime.model.CacheModel;
 import dev.ko.runtime.model.DatabaseModel;
 import dev.ko.runtime.model.PubSubTopicModel;
 import dev.ko.runtime.model.ServiceModel;
+import dev.ko.runtime.storage.KoBucket;
+import dev.ko.runtime.storage.KoStorageProvider;
+import dev.ko.runtime.storage.LocalFileStorageProvider;
 import dev.ko.runtime.pubsub.InMemoryPubSubProvider;
 import dev.ko.runtime.pubsub.KoPubSubProvider;
 import dev.ko.runtime.pubsub.KoSubscriberRegistrar;
@@ -33,6 +37,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import javax.sql.DataSource;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -69,12 +74,21 @@ public class KoAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(KoStorageProvider.class)
+    public KoStorageProvider koStorageProvider() {
+        Path storagePath = Path.of(System.getProperty("java.io.tmpdir"), "ko-storage");
+        return new LocalFileStorageProvider(storagePath);
+    }
+
+    @Bean
     public KoFieldInjector koFieldInjector(AppModel appModel,
                                            KoDatabaseProvider databaseProvider,
-                                           KoPubSubProvider pubSubProvider) {
+                                           KoPubSubProvider pubSubProvider,
+                                           KoStorageProvider storageProvider) {
         Map<String, KoSQLDatabase> databases = new HashMap<>();
         Map<String, KoCache<?, ?>> caches = new HashMap<>();
         Map<String, KoTopic<?>> topics = new HashMap<>();
+        Map<String, KoBucket> buckets = new HashMap<>();
 
         for (ServiceModel service : appModel.services()) {
             for (DatabaseModel db : service.databases()) {
@@ -87,6 +101,14 @@ public class KoAutoConfiguration {
             for (CacheModel cache : service.caches()) {
                 caches.put(cache.name(), new KoCache<>(cache.name(), cache.ttl()));
             }
+            if (service.buckets() != null) {
+                for (BucketModel bucket : service.buckets()) {
+                    if (!buckets.containsKey(bucket.name())) {
+                        buckets.put(bucket.name(), new KoBucket(bucket.name(), storageProvider));
+                        log.info("Ko: Created bucket '{}'", bucket.name());
+                    }
+                }
+            }
         }
 
         if (appModel.pubsubTopics() != null) {
@@ -96,7 +118,7 @@ public class KoAutoConfiguration {
             }
         }
 
-        return new KoFieldInjector(databases, caches, topics);
+        return new KoFieldInjector(databases, caches, topics, buckets);
     }
 
     @Bean

@@ -1,5 +1,6 @@
 package dev.ko.runtime.service;
 
+import dev.ko.annotations.KoBucket;
 import dev.ko.annotations.KoCache;
 import dev.ko.annotations.KoDatabase;
 import dev.ko.annotations.KoPubSub;
@@ -14,21 +15,24 @@ import java.util.Map;
 
 /**
  * Injects Ko infrastructure instances into @KoService bean fields
- * annotated with @KoDatabase, @KoCache, @KoPubSub, etc.
+ * annotated with @KoDatabase, @KoCache, @KoPubSub, @KoBucket, etc.
  */
 public class KoFieldInjector implements BeanPostProcessor {
 
     private final Map<String, KoSQLDatabase> databases;
     private final Map<String, dev.ko.runtime.cache.KoCache<?, ?>> caches;
     private final Map<String, KoTopic<?>> topics;
+    private final Map<String, dev.ko.runtime.storage.KoBucket> buckets;
 
     public KoFieldInjector(
             Map<String, KoSQLDatabase> databases,
             Map<String, dev.ko.runtime.cache.KoCache<?, ?>> caches,
-            Map<String, KoTopic<?>> topics) {
+            Map<String, KoTopic<?>> topics,
+            Map<String, dev.ko.runtime.storage.KoBucket> buckets) {
         this.databases = databases;
         this.caches = caches;
         this.topics = topics;
+        this.buckets = buckets;
     }
 
     @Override
@@ -55,6 +59,12 @@ public class KoFieldInjector implements BeanPostProcessor {
                 if (pubsubAnnotation != null) {
                     field.setAccessible(true);
                     field.set(bean, topics.get(pubsubAnnotation.topic()));
+                }
+
+                KoBucket bucketAnnotation = field.getAnnotation(KoBucket.class);
+                if (bucketAnnotation != null) {
+                    field.setAccessible(true);
+                    field.set(bean, buckets.get(bucketAnnotation.name()));
                 }
             } catch (IllegalAccessException e) {
                 throw new RuntimeException("Failed to inject field " + field.getName()
