@@ -130,13 +130,7 @@ public class KoAutoConfiguration {
             }
         }
 
-        return new KoFieldInjector(databases, caches, topics, buckets, secretProvider, serviceCaller);
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(KoServiceCaller.class)
-    public KoServiceCaller koServiceCaller(ApplicationContext context, AppModel appModel) {
-        return new InProcessCaller(context, appModel);
+        return new KoFieldInjector(databases, caches, topics, buckets, secretProvider);
     }
 
     @Bean
