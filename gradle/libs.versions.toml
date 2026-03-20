@@ -1,14 +1,15 @@
 [versions]
 java = "21"
-jackson = "2.18.2"
+jackson = "2.17.2"
 javapoet = "1.13.0"
 junit = "5.11.4"
 assertj = "3.27.0"
 compile-testing = "0.21.0"
 spring-boot = "3.4.1"
+spring-dependency-management = "1.1.7"
 
 [libraries]
-jackson-databind = { module = "com.fasterxml.jackson.databind:jackson-databind", version.ref = "jackson" }
+jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
 jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
 javapoet = { module = "com.squareup:javapoet", version.ref = "javapoet" }
 junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
@@ -16,6 +17,10 @@ junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
 junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params" }
 assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertj" }
 compile-testing = { module = "com.google.testing.compile:compile-testing", version.ref = "compile-testing" }
+spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web", version.ref = "spring-boot" }
+spring-boot-autoconfigure = { module = "org.springframework.boot:spring-boot-autoconfigure", version.ref = "spring-boot" }
+spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test", version.ref = "spring-boot" }
 
 [plugins]
 spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
+spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "spring-dependency-management" }
