@@ -17,11 +17,10 @@
     <span class="kw">private</span> <span class="type">KoSQLDatabase</span> db;
 
     <span class="ann">@KoAPI</span>(method = <span class="str">"GET"</span>, path = <span class="str">"/stock/:sku"</span>)
-    <span class="kw">public</span> <span class="type">StockResponse</span> <span class="fn">getStock</span>(<span class="ann">@PathParam</span>(<span class="str">"sku"</span>) <span class="type">String</span> sku) {
-        <span class="kw">return</span> db.<span class="fn">queryOne</span>(
+    <span class="kw">public</span> <span class="type">Map&lt;String, Object&gt;</span> <span class="fn">getStock</span>(<span class="ann">@PathParam</span>(<span class="str">"sku"</span>) <span class="type">String</span> sku) {
+        <span class="kw">return</span> db.<span class="fn">queryRow</span>(
             <span class="str">"SELECT * FROM stock WHERE sku = ?"</span>, sku
-        ).<span class="fn">map</span>(StockResponse::<span class="fn">from</span>)
-         .<span class="fn">orElseThrow</span>(() -&gt; <span class="type">KoError</span>.<span class="fn">notFound</span>(<span class="str">"SKU not found"</span>));
+        );
     }
 }</pre>
       </div>
@@ -51,7 +50,7 @@
         <div class="flow-arrow down">&darr;</div>
         <div class="flow-label">Based on environment</div>
         <div class="flow-row">
-          <div class="flow-box green">Local: Testcontainers PostgreSQL</div>
+          <div class="flow-box green">Local: H2 (in-memory, PostgreSQL mode)</div>
           <div class="flow-box red">Prod: HikariCP &rarr; Cloud SQL / RDS</div>
         </div>
       </div>
