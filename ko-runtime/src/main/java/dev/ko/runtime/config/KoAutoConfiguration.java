@@ -5,6 +5,7 @@ import dev.ko.runtime.api.KoEndpointRegistrar;
 import dev.ko.runtime.api.KoPathParamResolver;
 import dev.ko.runtime.api.KoRequestBodyResolver;
 import dev.ko.runtime.cache.KoCache;
+import dev.ko.runtime.cron.KoCronScheduler;
 import dev.ko.runtime.database.KoDatabaseProvider;
 import dev.ko.runtime.database.KoMigrationRunner;
 import dev.ko.runtime.database.KoSQLDatabase;
@@ -102,6 +103,11 @@ public class KoAutoConfiguration {
     public KoSubscriberRegistrar koSubscriberRegistrar(ApplicationContext context,
                                                        KoPubSubProvider pubSubProvider) {
         return new KoSubscriberRegistrar(context, pubSubProvider);
+    }
+
+    @Bean
+    public KoCronScheduler koCronScheduler(ApplicationContext context, AppModel appModel) {
+        return new KoCronScheduler(context, appModel);
     }
 
     @Bean
