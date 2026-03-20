@@ -5,7 +5,10 @@ import dev.ko.runtime.api.KoEndpointRegistrar;
 import dev.ko.runtime.api.KoPathParamResolver;
 import dev.ko.runtime.api.KoRequestBodyResolver;
 import dev.ko.runtime.cache.KoCache;
+import dev.ko.runtime.database.KoDatabaseProvider;
+import dev.ko.runtime.database.KoMigrationRunner;
 import dev.ko.runtime.database.KoSQLDatabase;
+import dev.ko.runtime.database.LocalDatabaseProvider;
 import dev.ko.runtime.model.AppModel;
 import dev.ko.runtime.model.CacheModel;
 import dev.ko.runtime.model.DatabaseModel;
@@ -15,6 +18,7 @@ import dev.ko.runtime.service.KoServiceRegistrar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnResource;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -22,6 +26,7 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
+import javax.sql.DataSource;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,13 +51,23 @@ public class KoAutoConfiguration {
     }
 
     @Bean
-    public KoFieldInjector koFieldInjector(AppModel appModel) {
+    @ConditionalOnMissingBean(KoDatabaseProvider.class)
+    public KoDatabaseProvider koDatabaseProvider() {
+        return new LocalDatabaseProvider();
+    }
+
+    @Bean
+    public KoFieldInjector koFieldInjector(AppModel appModel, KoDatabaseProvider databaseProvider) {
         Map<String, KoSQLDatabase> databases = new HashMap<>();
         Map<String, KoCache<?, ?>> caches = new HashMap<>();
 
         for (ServiceModel service : appModel.services()) {
             for (DatabaseModel db : service.databases()) {
-                databases.put(db.name(), new KoSQLDatabase(db.name()));
+                if (!databases.containsKey(db.name())) {
+                    DataSource ds = databaseProvider.getDataSource(db.name());
+                    KoMigrationRunner.run(ds, db.name(), db.migrations());
+                    databases.put(db.name(), new KoSQLDatabase(db.name(), ds));
+                }
             }
             for (CacheModel cache : service.caches()) {
                 caches.put(cache.name(), new KoCache<>(cache.name(), cache.ttl()));

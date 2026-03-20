@@ -7,6 +7,9 @@ import dev.ko.annotations.KoService;
 import dev.ko.annotations.PathParam;
 import dev.ko.runtime.database.KoSQLDatabase;
 
+import java.util.List;
+import java.util.Map;
+
 @KoService("greeting-service")
 public class GreetingService {
 
@@ -22,14 +25,30 @@ public class GreetingService {
         return new GreetingResponse("Hello, " + name + "!");
     }
 
-    /** Create a personalized greeting. */
+    /** Create a greeting and persist it to the database. */
     @KoAPI(method = "POST", path = "/greetings", auth = true)
     public GreetingResponse createGreeting(CreateGreetingRequest request) {
+        db.exec("INSERT INTO greetings (name, message) VALUES (?, ?)",
+                request.name(), request.message());
+
         return new GreetingResponse("Hello, " + request.name() + "! " + request.message());
+    }
+
+    /** List all saved greetings. */
+    @KoAPI(method = "GET", path = "/greetings")
+    public List<Map<String, Object>> listGreetings() {
+        return db.query("SELECT id, name, message, created_at FROM greetings ORDER BY created_at DESC");
+    }
+
+    /** Get a specific greeting by ID. */
+    @KoAPI(method = "GET", path = "/greetings/:id")
+    public Map<String, Object> getGreeting(@PathParam("id") String id) {
+        return db.queryRow("SELECT id, name, message, created_at FROM greetings WHERE id = ?",
+                Long.parseLong(id));
     }
 
     @KoCron(schedule = "0 3 * * *", name = "cleanup-old-greetings")
     public void cleanupOldGreetings() {
-        // cleanup logic
+        db.exec("DELETE FROM greetings WHERE created_at < DATEADD('DAY', -30, CURRENT_TIMESTAMP)");
     }
 }
