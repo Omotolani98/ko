@@ -1,15 +1,18 @@
 package com.example;
 
 import dev.ko.annotations.KoAPI;
+import dev.ko.annotations.KoBucket;
 import dev.ko.annotations.KoCron;
 import dev.ko.annotations.KoDatabase;
 import dev.ko.annotations.KoPubSub;
 import dev.ko.annotations.KoService;
 import dev.ko.annotations.KoSubscribe;
 import dev.ko.annotations.PathParam;
+import dev.ko.runtime.cache.KoCache;
 import dev.ko.runtime.database.KoSQLDatabase;
 import dev.ko.runtime.pubsub.KoTopic;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
@@ -20,10 +23,13 @@ public class GreetingService {
     private KoSQLDatabase db;
 
     @dev.ko.annotations.KoCache(name = "greeting-cache", ttl = 600)
-    private dev.ko.runtime.cache.KoCache<String, GreetingResponse> cache;
+    private KoCache<String, GreetingResponse> cache;
 
     @KoPubSub(topic = "greeting-events")
     private KoTopic<GreetingEvent> events;
+
+    @KoBucket(name = "greeting-files")
+    private dev.ko.runtime.storage.KoBucket files;
 
     /** Say hello to someone. */
     @KoAPI(method = "GET", path = "/hello/:name")
@@ -31,7 +37,7 @@ public class GreetingService {
         return new GreetingResponse("Hello, " + name + "!");
     }
 
-    /** Create a greeting, persist it, and publish an event. */
+    /** Create a greeting, persist it, publish an event, and store a file. */
     @KoAPI(method = "POST", path = "/greetings", auth = true)
     public GreetingResponse createGreeting(CreateGreetingRequest request) {
         db.exec("INSERT INTO greetings (name, message) VALUES (?, ?)",
@@ -39,7 +45,11 @@ public class GreetingService {
 
         events.publish(new GreetingEvent(request.name(), request.message()));
 
-        return new GreetingResponse("Hello, " + request.name() + "! " + request.message());
+        // Store greeting as a text file in the bucket
+        String content = "Hello, " + request.name() + "! " + request.message();
+        files.upload(request.name() + ".txt", content.getBytes(StandardCharsets.UTF_8), "text/plain");
+
+        return new GreetingResponse(content);
     }
 
     /** List all saved greetings. */
@@ -53,6 +63,12 @@ public class GreetingService {
     public Map<String, Object> getGreeting(@PathParam("id") String id) {
         return db.queryRow("SELECT id, name, message, created_at FROM greetings WHERE id = ?",
                 Long.parseLong(id));
+    }
+
+    /** List all files in the greeting-files bucket. */
+    @KoAPI(method = "GET", path = "/files")
+    public List<String> listFiles() {
+        return files.list();
     }
 
     /** Handle greeting events — log them. */

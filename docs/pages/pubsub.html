@@ -33,6 +33,18 @@ orderTopic.<span class="fn">publish</span>(<span class="kw">new</span> <span cla
 }</pre>
       </div>
 
+      <h2>@KoPubSub Attributes</h2>
+
+      <table class="mapping-table">
+        <thead>
+          <tr><th>Attribute</th><th>Type</th><th>Default</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>topic</td><td>String</td><td>&mdash;</td><td>Topic name (kebab-case)</td></tr>
+          <tr><td>delivery</td><td>DeliveryGuarantee</td><td>AT_LEAST_ONCE</td><td>Delivery guarantee for this topic</td></tr>
+        </tbody>
+      </table>
+
       <h2>Delivery Guarantees</h2>
 
       <table class="mapping-table">
@@ -59,3 +71,35 @@ orderTopic.<span class="fn">publish</span>(<span class="kw">new</span> <span cla
           <tr><td>deadLetter</td><td>boolean</td><td>true</td><td>Whether to use a dead-letter queue</td></tr>
         </tbody>
       </table>
+
+      <h2>How It Works</h2>
+
+      <div class="flow-diagram">
+        <div class="flow-row">
+          <div class="flow-box amber">@KoPubSub / @KoSubscribe</div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-box blue">App Model</div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-box purple">Runtime resolves</div>
+        </div>
+        <div class="flow-arrow down">&darr;</div>
+        <div class="flow-label">Based on environment</div>
+        <div class="flow-row">
+          <div class="flow-box green">Local: In-memory (virtual threads)</div>
+          <div class="flow-box red">Prod: Kafka / SQS+SNS / GCP Pub/Sub</div>
+        </div>
+      </div>
+
+      <div class="prose">
+        <p>
+          At startup, the runtime creates a <code>KoTopic</code> instance for each declared topic and
+          registers all <code>@KoSubscribe</code> methods as handlers. When you call <code>publish()</code>,
+          the message is delivered to all subscribers asynchronously on <strong>virtual threads</strong>.
+          Each subscriber gets its own copy of the message (fan-out).
+        </p>
+      </div>
+
+      <div class="callout tip">
+        <div class="callout-title">Tip</div>
+        <p>Subscribers run on virtual threads, so they won't block each other. If a subscriber throws an exception, it is logged but does not affect other subscribers or the publisher.</p>
+      </div>

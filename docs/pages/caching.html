@@ -10,18 +10,18 @@
           <span class="code-filename">Using a cache</span>
           <span class="code-lang">Java</span>
         </div>
-        <pre><span class="ann">@KoCache</span>(name = <span class="str">"product-cache"</span>, keyType = String.<span class="kw">class</span>, ttl = <span class="num">900</span>)
+        <pre><span class="ann">@KoCache</span>(name = <span class="str">"product-cache"</span>, ttl = <span class="num">900</span>)
 <span class="kw">private</span> <span class="type">KoCache</span>&lt;String, ProductResponse&gt; cache;
 
 <span class="ann">@KoAPI</span>(method = <span class="str">"GET"</span>, path = <span class="str">"/products/:id"</span>)
 <span class="kw">public</span> <span class="type">ProductResponse</span> <span class="fn">getProduct</span>(<span class="ann">@PathParam</span>(<span class="str">"id"</span>) <span class="type">String</span> id) {
     <span class="kw">return</span> cache.<span class="fn">getOrSet</span>(id, () -&gt;
-        db.<span class="fn">queryOne</span>(<span class="str">"SELECT * FROM products WHERE id = ?"</span>, id)
-          .<span class="fn">map</span>(ProductResponse::<span class="fn">from</span>)
-          .<span class="fn">orElseThrow</span>(() -&gt; <span class="type">KoError</span>.<span class="fn">notFound</span>(<span class="str">"Product not found"</span>))
+        loadProductFromDb(id)
     );
 }</pre>
       </div>
+
+      <h2>Annotation Attributes</h2>
 
       <table class="mapping-table">
         <thead>
@@ -29,7 +29,44 @@
         </thead>
         <tbody>
           <tr><td>name</td><td>String</td><td>&mdash;</td><td>Unique cache name (kebab-case)</td></tr>
-          <tr><td>keyType</td><td>Class&lt;?&gt;</td><td>String.class</td><td>Type of the cache key</td></tr>
           <tr><td>ttl</td><td>long</td><td>300</td><td>Time-to-live in seconds</td></tr>
         </tbody>
       </table>
+
+      <h2>API Methods</h2>
+
+      <table class="mapping-table">
+        <thead>
+          <tr><th>Method</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>get(key)</td><td>Get a cached value (returns null if not found or expired)</td></tr>
+          <tr><td>getOrSet(key, loader)</td><td>Get a cached value, or compute and cache it if missing</td></tr>
+          <tr><td>set(key, value)</td><td>Store a value with the default TTL</td></tr>
+          <tr><td>set(key, value, ttlSeconds)</td><td>Store a value with a custom TTL</td></tr>
+          <tr><td>delete(key)</td><td>Remove a value from the cache</td></tr>
+        </tbody>
+      </table>
+
+      <h2>How It Works</h2>
+
+      <div class="flow-diagram">
+        <div class="flow-row">
+          <div class="flow-box amber">@KoCache</div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-box blue">App Model</div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-box purple">Runtime resolves</div>
+        </div>
+        <div class="flow-arrow down">&darr;</div>
+        <div class="flow-label">Based on environment</div>
+        <div class="flow-row">
+          <div class="flow-box green">Local: ConcurrentHashMap (in-memory)</div>
+          <div class="flow-box red">Prod: Redis (Lettuce) / Memcached</div>
+        </div>
+      </div>
+
+      <div class="callout tip">
+        <div class="callout-title">Tip</div>
+        <p>The local in-memory cache respects TTL &mdash; expired entries are evicted on access. Use <code>getOrSet()</code> as your default pattern to avoid cache stampedes.</p>
+      </div>
