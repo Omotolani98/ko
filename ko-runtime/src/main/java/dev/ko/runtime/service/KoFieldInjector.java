@@ -15,9 +15,9 @@ import dev.ko.runtime.secrets.KoSecretValue;
 import dev.ko.runtime.storage.KoBucketStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import dev.ko.runtime.storage.KoBucketStore;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.context.ApplicationContext;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -36,7 +36,7 @@ public class KoFieldInjector implements BeanPostProcessor {
     private final Map<String, KoTopic<?>> topics;
     private final Map<String, KoBucketStore> buckets;
     private final KoSecretProvider secretProvider;
-    private final KoServiceCaller serviceCaller;
+    private final ApplicationContext applicationContext;
 
     public KoFieldInjector(
             Map<String, KoSQLDatabase> databases,
@@ -44,13 +44,13 @@ public class KoFieldInjector implements BeanPostProcessor {
             Map<String, KoTopic<?>> topics,
             Map<String, KoBucketStore> buckets,
             KoSecretProvider secretProvider,
-            KoServiceCaller serviceCaller) {
+            ApplicationContext applicationContext) {
         this.databases = databases;
         this.caches = caches;
         this.topics = topics;
         this.buckets = buckets;
         this.secretProvider = secretProvider;
-        this.serviceCaller = serviceCaller;
+        this.applicationContext = applicationContext;
     }
 
     @Override
@@ -94,9 +94,10 @@ public class KoFieldInjector implements BeanPostProcessor {
                 KoServiceClient clientAnnotation = field.getAnnotation(KoServiceClient.class);
                 if (clientAnnotation != null) {
                     field.setAccessible(true);
+                    KoServiceCaller caller = applicationContext.getBean(KoServiceCaller.class);
                     Object client = field.getType().getDeclaredConstructor().newInstance();
                     Method setCaller = field.getType().getMethod("setCaller", KoServiceCaller.class);
-                    setCaller.invoke(client, serviceCaller);
+                    setCaller.invoke(client, caller);
                     field.set(bean, client);
                     log.info("Ko: Injected service client '{}'", field.getType().getSimpleName());
                 }

@@ -4,30 +4,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.ko.runtime.api.KoEndpointRegistrar;
 import dev.ko.runtime.api.KoPathParamResolver;
 import dev.ko.runtime.api.KoRequestBodyResolver;
-import dev.ko.runtime.cache.KoCacheCluster;
 import dev.ko.runtime.cron.KoCronScheduler;
 import dev.ko.runtime.database.KoDatabaseProvider;
-import dev.ko.runtime.database.KoMigrationRunner;
-import dev.ko.runtime.database.KoSQLDatabase;
 import dev.ko.runtime.database.LocalDatabaseProvider;
 import dev.ko.runtime.model.AppModel;
-import dev.ko.runtime.model.BucketModel;
-import dev.ko.runtime.model.CacheModel;
-import dev.ko.runtime.model.DatabaseModel;
-import dev.ko.runtime.model.PubSubTopicModel;
-import dev.ko.runtime.model.ServiceModel;
-import dev.ko.runtime.storage.KoBucketStore;
 import dev.ko.runtime.storage.KoStorageProvider;
 import dev.ko.runtime.storage.LocalFileStorageProvider;
 import dev.ko.runtime.pubsub.InMemoryPubSubProvider;
 import dev.ko.runtime.pubsub.KoPubSubProvider;
 import dev.ko.runtime.pubsub.KoSubscriberRegistrar;
-import dev.ko.runtime.pubsub.KoTopic;
 import dev.ko.runtime.secrets.EnvVarSecretProvider;
 import dev.ko.runtime.secrets.KoSecretProvider;
-import dev.ko.runtime.service.InProcessCaller;
-import dev.ko.runtime.service.KoFieldInjector;
-import dev.ko.runtime.service.KoServiceCaller;
 import dev.ko.runtime.service.KoServiceRegistrar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,11 +27,8 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
-import javax.sql.DataSource;
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @AutoConfiguration
 @ConditionalOnResource(resources = "classpath:ko-app-model.json")
@@ -88,49 +72,6 @@ public class KoAutoConfiguration {
     @ConditionalOnMissingBean(KoSecretProvider.class)
     public KoSecretProvider koSecretProvider() {
         return new EnvVarSecretProvider();
-    }
-
-    @Bean
-    public KoFieldInjector koFieldInjector(AppModel appModel,
-                                           KoDatabaseProvider databaseProvider,
-                                           KoPubSubProvider pubSubProvider,
-                                           KoStorageProvider storageProvider,
-                                           KoSecretProvider secretProvider,
-                                           KoServiceCaller serviceCaller) {
-        Map<String, KoSQLDatabase> databases = new HashMap<>();
-        Map<String, KoCacheCluster<?, ?>> caches = new HashMap<>();
-        Map<String, KoTopic<?>> topics = new HashMap<>();
-        Map<String, KoBucketStore> buckets = new HashMap<>();
-
-        for (ServiceModel service : appModel.services()) {
-            for (DatabaseModel db : service.databases()) {
-                if (!databases.containsKey(db.name())) {
-                    DataSource ds = databaseProvider.getDataSource(db.name());
-                    KoMigrationRunner.run(ds, db.name(), db.migrations());
-                    databases.put(db.name(), new KoSQLDatabase(db.name(), ds));
-                }
-            }
-            for (CacheModel cache : service.caches()) {
-                caches.put(cache.name(), new KoCacheCluster<>(cache.name(), cache.ttl()));
-            }
-            if (service.buckets() != null) {
-                for (BucketModel bucket : service.buckets()) {
-                    if (!buckets.containsKey(bucket.name())) {
-                        buckets.put(bucket.name(), new KoBucketStore(bucket.name(), storageProvider));
-                        log.info("Ko: Created bucket '{}'", bucket.name());
-                    }
-                }
-            }
-        }
-
-        if (appModel.pubsubTopics() != null) {
-            for (PubSubTopicModel topic : appModel.pubsubTopics()) {
-                topics.put(topic.name(), new KoTopic<>(topic.name(), pubSubProvider));
-                log.info("Ko: Created topic '{}'", topic.name());
-            }
-        }
-
-        return new KoFieldInjector(databases, caches, topics, buckets, secretProvider);
     }
 
     @Bean
