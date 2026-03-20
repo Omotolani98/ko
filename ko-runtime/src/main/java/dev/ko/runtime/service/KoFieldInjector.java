@@ -4,9 +4,14 @@ import dev.ko.annotations.KoBucket;
 import dev.ko.annotations.KoCache;
 import dev.ko.annotations.KoDatabase;
 import dev.ko.annotations.KoPubSub;
+import dev.ko.annotations.KoSecret;
 import dev.ko.annotations.KoService;
+import dev.ko.runtime.cache.KoCacheCluster;
 import dev.ko.runtime.database.KoSQLDatabase;
 import dev.ko.runtime.pubsub.KoTopic;
+import dev.ko.runtime.secrets.KoSecretProvider;
+import dev.ko.runtime.secrets.KoSecretValue;
+import dev.ko.runtime.storage.KoBucketStore;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 
@@ -20,19 +25,22 @@ import java.util.Map;
 public class KoFieldInjector implements BeanPostProcessor {
 
     private final Map<String, KoSQLDatabase> databases;
-    private final Map<String, dev.ko.runtime.cache.KoCache<?, ?>> caches;
+    private final Map<String, KoCacheCluster<?, ?>> caches;
     private final Map<String, KoTopic<?>> topics;
-    private final Map<String, dev.ko.runtime.storage.KoBucket> buckets;
+    private final Map<String, KoBucketStore> buckets;
+    private final KoSecretProvider secretProvider;
 
     public KoFieldInjector(
             Map<String, KoSQLDatabase> databases,
-            Map<String, dev.ko.runtime.cache.KoCache<?, ?>> caches,
+            Map<String, KoCacheCluster<?, ?>> caches,
             Map<String, KoTopic<?>> topics,
-            Map<String, dev.ko.runtime.storage.KoBucket> buckets) {
+            Map<String, KoBucketStore> buckets,
+            KoSecretProvider secretProvider) {
         this.databases = databases;
         this.caches = caches;
         this.topics = topics;
         this.buckets = buckets;
+        this.secretProvider = secretProvider;
     }
 
     @Override
@@ -65,6 +73,12 @@ public class KoFieldInjector implements BeanPostProcessor {
                 if (bucketAnnotation != null) {
                     field.setAccessible(true);
                     field.set(bean, buckets.get(bucketAnnotation.name()));
+                }
+
+                KoSecret secretAnnotation = field.getAnnotation(KoSecret.class);
+                if (secretAnnotation != null) {
+                    field.setAccessible(true);
+                    field.set(bean, new KoSecretValue(secretAnnotation.value(), secretProvider));
                 }
             } catch (IllegalAccessException e) {
                 throw new RuntimeException("Failed to inject field " + field.getName()
