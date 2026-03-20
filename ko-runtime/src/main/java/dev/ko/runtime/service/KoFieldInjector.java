@@ -6,12 +6,13 @@ import dev.ko.annotations.KoDatabase;
 import dev.ko.annotations.KoPubSub;
 import dev.ko.annotations.KoSecret;
 import dev.ko.annotations.KoService;
-import dev.ko.runtime.cache.KoCacheCluster;
 import dev.ko.annotations.KoServiceClient;
+import dev.ko.runtime.cache.KoCacheCluster;
 import dev.ko.runtime.database.KoSQLDatabase;
 import dev.ko.runtime.pubsub.KoTopic;
 import dev.ko.runtime.secrets.KoSecretProvider;
 import dev.ko.runtime.secrets.KoSecretValue;
+import dev.ko.runtime.storage.KoBucketStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import dev.ko.runtime.storage.KoBucketStore;
@@ -94,15 +95,11 @@ public class KoFieldInjector implements BeanPostProcessor {
                 if (clientAnnotation != null) {
                     field.setAccessible(true);
                     Object client = field.getType().getDeclaredConstructor().newInstance();
-                    // Inject the KoServiceCaller via setCaller method
                     Method setCaller = field.getType().getMethod("setCaller", KoServiceCaller.class);
                     setCaller.invoke(client, serviceCaller);
                     field.set(bean, client);
                     log.info("Ko: Injected service client '{}'", field.getType().getSimpleName());
                 }
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException("Failed to inject field " + field.getName()
-                        + " on " + bean.getClass().getName(), e);
             } catch (Exception e) {
                 throw new RuntimeException("Failed to inject field " + field.getName()
                         + " on " + bean.getClass().getName(), e);
