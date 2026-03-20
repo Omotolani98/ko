@@ -12,7 +12,12 @@ import dev.ko.runtime.database.LocalDatabaseProvider;
 import dev.ko.runtime.model.AppModel;
 import dev.ko.runtime.model.CacheModel;
 import dev.ko.runtime.model.DatabaseModel;
+import dev.ko.runtime.model.PubSubTopicModel;
 import dev.ko.runtime.model.ServiceModel;
+import dev.ko.runtime.pubsub.InMemoryPubSubProvider;
+import dev.ko.runtime.pubsub.KoPubSubProvider;
+import dev.ko.runtime.pubsub.KoSubscriberRegistrar;
+import dev.ko.runtime.pubsub.KoTopic;
 import dev.ko.runtime.service.KoFieldInjector;
 import dev.ko.runtime.service.KoServiceRegistrar;
 import org.slf4j.Logger;
@@ -57,9 +62,18 @@ public class KoAutoConfiguration {
     }
 
     @Bean
-    public KoFieldInjector koFieldInjector(AppModel appModel, KoDatabaseProvider databaseProvider) {
+    @ConditionalOnMissingBean(KoPubSubProvider.class)
+    public KoPubSubProvider koPubSubProvider() {
+        return new InMemoryPubSubProvider();
+    }
+
+    @Bean
+    public KoFieldInjector koFieldInjector(AppModel appModel,
+                                           KoDatabaseProvider databaseProvider,
+                                           KoPubSubProvider pubSubProvider) {
         Map<String, KoSQLDatabase> databases = new HashMap<>();
         Map<String, KoCache<?, ?>> caches = new HashMap<>();
+        Map<String, KoTopic<?>> topics = new HashMap<>();
 
         for (ServiceModel service : appModel.services()) {
             for (DatabaseModel db : service.databases()) {
@@ -74,7 +88,20 @@ public class KoAutoConfiguration {
             }
         }
 
-        return new KoFieldInjector(databases, caches);
+        if (appModel.pubsubTopics() != null) {
+            for (PubSubTopicModel topic : appModel.pubsubTopics()) {
+                topics.put(topic.name(), new KoTopic<>(topic.name(), pubSubProvider));
+                log.info("Ko: Created topic '{}'", topic.name());
+            }
+        }
+
+        return new KoFieldInjector(databases, caches, topics);
+    }
+
+    @Bean
+    public KoSubscriberRegistrar koSubscriberRegistrar(ApplicationContext context,
+                                                       KoPubSubProvider pubSubProvider) {
+        return new KoSubscriberRegistrar(context, pubSubProvider);
     }
 
     @Bean
