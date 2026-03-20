@@ -6,16 +6,21 @@ import dev.ko.annotations.KoDatabase;
 import dev.ko.annotations.KoPubSub;
 import dev.ko.annotations.KoSecret;
 import dev.ko.annotations.KoService;
+import dev.ko.annotations.KoServiceClient;
 import dev.ko.runtime.cache.KoCacheCluster;
 import dev.ko.runtime.database.KoSQLDatabase;
 import dev.ko.runtime.pubsub.KoTopic;
 import dev.ko.runtime.secrets.KoSecretProvider;
 import dev.ko.runtime.secrets.KoSecretValue;
 import dev.ko.runtime.storage.KoBucketStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.context.ApplicationContext;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Map;
 
 /**
@@ -24,23 +29,28 @@ import java.util.Map;
  */
 public class KoFieldInjector implements BeanPostProcessor {
 
+    private static final Logger log = LoggerFactory.getLogger(KoFieldInjector.class);
+
     private final Map<String, KoSQLDatabase> databases;
     private final Map<String, KoCacheCluster<?, ?>> caches;
     private final Map<String, KoTopic<?>> topics;
     private final Map<String, KoBucketStore> buckets;
     private final KoSecretProvider secretProvider;
+    private final ApplicationContext applicationContext;
 
     public KoFieldInjector(
             Map<String, KoSQLDatabase> databases,
             Map<String, KoCacheCluster<?, ?>> caches,
             Map<String, KoTopic<?>> topics,
             Map<String, KoBucketStore> buckets,
-            KoSecretProvider secretProvider) {
+            KoSecretProvider secretProvider,
+            ApplicationContext applicationContext) {
         this.databases = databases;
         this.caches = caches;
         this.topics = topics;
         this.buckets = buckets;
         this.secretProvider = secretProvider;
+        this.applicationContext = applicationContext;
     }
 
     @Override
@@ -80,7 +90,18 @@ public class KoFieldInjector implements BeanPostProcessor {
                     field.setAccessible(true);
                     field.set(bean, new KoSecretValue(secretAnnotation.value(), secretProvider));
                 }
-            } catch (IllegalAccessException e) {
+
+                KoServiceClient clientAnnotation = field.getAnnotation(KoServiceClient.class);
+                if (clientAnnotation != null) {
+                    field.setAccessible(true);
+                    KoServiceCaller caller = applicationContext.getBean(KoServiceCaller.class);
+                    Object client = field.getType().getDeclaredConstructor().newInstance();
+                    Method setCaller = field.getType().getMethod("setCaller", KoServiceCaller.class);
+                    setCaller.invoke(client, caller);
+                    field.set(bean, client);
+                    log.info("Ko: Injected service client '{}'", field.getType().getSimpleName());
+                }
+            } catch (Exception e) {
                 throw new RuntimeException("Failed to inject field " + field.getName()
                         + " on " + bean.getClass().getName(), e);
             }

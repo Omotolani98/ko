@@ -1,15 +1,6 @@
 package com.example;
 
-import dev.ko.annotations.KoAPI;
-import dev.ko.annotations.KoBucket;
-import dev.ko.annotations.KoCache;
-import dev.ko.annotations.KoCron;
-import dev.ko.annotations.KoDatabase;
-import dev.ko.annotations.KoPubSub;
-import dev.ko.annotations.KoSecret;
-import dev.ko.annotations.KoService;
-import dev.ko.annotations.KoSubscribe;
-import dev.ko.annotations.PathParam;
+import dev.ko.annotations.*;
 import dev.ko.runtime.cache.KoCacheCluster;
 import dev.ko.runtime.database.KoSQLDatabase;
 import dev.ko.runtime.pubsub.KoTopic;
