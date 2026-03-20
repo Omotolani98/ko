@@ -8,13 +8,13 @@ import java.util.function.Supplier;
 /**
  * In-memory cache backed by ConcurrentHashMap with TTL support.
  */
-public class KoCache<K, V> {
+public class KoCacheCluster<K, V> {
 
     private final String name;
     private final long ttlSeconds;
     private final ConcurrentHashMap<K, CacheEntry<V>> store = new ConcurrentHashMap<>();
 
-    public KoCache(String name, long ttlSeconds) {
+    public KoCacheCluster(String name, long ttlSeconds) {
         this.name = name;
         this.ttlSeconds = ttlSeconds;
     }
@@ -43,6 +43,10 @@ public class KoCache<K, V> {
     }
 
     public void set(K key, V value) {
+        store.put(key, new CacheEntry<>(value, Instant.now().plusSeconds(ttlSeconds)));
+    }
+
+    public void set(K key, V value, long ttlSeconds) {
         store.put(key, new CacheEntry<>(value, Instant.now().plusSeconds(ttlSeconds)));
     }
 

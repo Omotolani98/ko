@@ -11,21 +11,21 @@ import java.util.List;
  * <pre>
  * {@code
  * @KoBucket(name = "avatars", publicRead = true)
- * private KoBucket avatars;
+ * private KoBucketStore avatars;
  *
  * avatars.upload("user-123.png", imageBytes, "image/png");
  * byte[] data = avatars.download("user-123.png");
  * }
  * </pre>
  */
-public class KoBucket {
+public class KoBucketStore {
 
-    private static final Logger log = LoggerFactory.getLogger(KoBucket.class);
+    private static final Logger log = LoggerFactory.getLogger(KoBucketStore.class);
 
     private final String name;
     private final KoStorageProvider provider;
 
-    public KoBucket(String name, KoStorageProvider provider) {
+    public KoBucketStore(String name, KoStorageProvider provider) {
         this.name = name;
         this.provider = provider;
     }

@@ -11,7 +11,7 @@
           <span class="code-lang">Java</span>
         </div>
         <pre><span class="ann">@KoCache</span>(name = <span class="str">"product-cache"</span>, ttl = <span class="num">900</span>)
-<span class="kw">private</span> <span class="type">KoCache</span>&lt;String, ProductResponse&gt; cache;
+<span class="kw">private</span> <span class="type">KoCacheCluster</span>&lt;String, ProductResponse&gt; cache;
 
 <span class="ann">@KoAPI</span>(method = <span class="str">"GET"</span>, path = <span class="str">"/products/:id"</span>)
 <span class="kw">public</span> <span class="type">ProductResponse</span> <span class="fn">getProduct</span>(<span class="ann">@PathParam</span>(<span class="str">"id"</span>) <span class="type">String</span> id) {

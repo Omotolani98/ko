@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.ko.runtime.api.KoEndpointRegistrar;
 import dev.ko.runtime.api.KoPathParamResolver;
 import dev.ko.runtime.api.KoRequestBodyResolver;
-import dev.ko.runtime.cache.KoCache;
+import dev.ko.runtime.cache.KoCacheCluster;
 import dev.ko.runtime.cron.KoCronScheduler;
 import dev.ko.runtime.database.KoDatabaseProvider;
 import dev.ko.runtime.database.KoMigrationRunner;
@@ -16,13 +16,15 @@ import dev.ko.runtime.model.CacheModel;
 import dev.ko.runtime.model.DatabaseModel;
 import dev.ko.runtime.model.PubSubTopicModel;
 import dev.ko.runtime.model.ServiceModel;
-import dev.ko.runtime.storage.KoBucket;
+import dev.ko.runtime.storage.KoBucketStore;
 import dev.ko.runtime.storage.KoStorageProvider;
 import dev.ko.runtime.storage.LocalFileStorageProvider;
 import dev.ko.runtime.pubsub.InMemoryPubSubProvider;
 import dev.ko.runtime.pubsub.KoPubSubProvider;
 import dev.ko.runtime.pubsub.KoSubscriberRegistrar;
 import dev.ko.runtime.pubsub.KoTopic;
+import dev.ko.runtime.secrets.EnvVarSecretProvider;
+import dev.ko.runtime.secrets.KoSecretProvider;
 import dev.ko.runtime.service.KoFieldInjector;
 import dev.ko.runtime.service.KoServiceRegistrar;
 import org.slf4j.Logger;
@@ -81,14 +83,21 @@ public class KoAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(KoSecretProvider.class)
+    public KoSecretProvider koSecretProvider() {
+        return new EnvVarSecretProvider();
+    }
+
+    @Bean
     public KoFieldInjector koFieldInjector(AppModel appModel,
                                            KoDatabaseProvider databaseProvider,
                                            KoPubSubProvider pubSubProvider,
-                                           KoStorageProvider storageProvider) {
+                                           KoStorageProvider storageProvider,
+                                           KoSecretProvider secretProvider) {
         Map<String, KoSQLDatabase> databases = new HashMap<>();
-        Map<String, KoCache<?, ?>> caches = new HashMap<>();
+        Map<String, KoCacheCluster<?, ?>> caches = new HashMap<>();
         Map<String, KoTopic<?>> topics = new HashMap<>();
-        Map<String, KoBucket> buckets = new HashMap<>();
+        Map<String, KoBucketStore> buckets = new HashMap<>();
 
         for (ServiceModel service : appModel.services()) {
             for (DatabaseModel db : service.databases()) {
@@ -99,12 +108,12 @@ public class KoAutoConfiguration {
                 }
             }
             for (CacheModel cache : service.caches()) {
-                caches.put(cache.name(), new KoCache<>(cache.name(), cache.ttl()));
+                caches.put(cache.name(), new KoCacheCluster<>(cache.name(), cache.ttl()));
             }
             if (service.buckets() != null) {
                 for (BucketModel bucket : service.buckets()) {
                     if (!buckets.containsKey(bucket.name())) {
-                        buckets.put(bucket.name(), new KoBucket(bucket.name(), storageProvider));
+                        buckets.put(bucket.name(), new KoBucketStore(bucket.name(), storageProvider));
                         log.info("Ko: Created bucket '{}'", bucket.name());
                     }
                 }
@@ -118,7 +127,7 @@ public class KoAutoConfiguration {
             }
         }
 
-        return new KoFieldInjector(databases, caches, topics, buckets);
+        return new KoFieldInjector(databases, caches, topics, buckets, secretProvider);
     }
 
     @Bean

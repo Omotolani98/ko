@@ -2,15 +2,19 @@ package com.example;
 
 import dev.ko.annotations.KoAPI;
 import dev.ko.annotations.KoBucket;
+import dev.ko.annotations.KoCache;
 import dev.ko.annotations.KoCron;
 import dev.ko.annotations.KoDatabase;
 import dev.ko.annotations.KoPubSub;
+import dev.ko.annotations.KoSecret;
 import dev.ko.annotations.KoService;
 import dev.ko.annotations.KoSubscribe;
 import dev.ko.annotations.PathParam;
-import dev.ko.runtime.cache.KoCache;
+import dev.ko.runtime.cache.KoCacheCluster;
 import dev.ko.runtime.database.KoSQLDatabase;
 import dev.ko.runtime.pubsub.KoTopic;
+import dev.ko.runtime.secrets.KoSecretValue;
+import dev.ko.runtime.storage.KoBucketStore;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -22,14 +26,17 @@ public class GreetingService {
     @KoDatabase(name = "greetings")
     private KoSQLDatabase db;
 
-    @dev.ko.annotations.KoCache(name = "greeting-cache", ttl = 600)
-    private KoCache<String, GreetingResponse> cache;
+    @KoCache(name = "greeting-cache", ttl = 600)
+    private KoCacheCluster<String, GreetingResponse> cache;
 
     @KoPubSub(topic = "greeting-events")
     private KoTopic<GreetingEvent> events;
 
     @KoBucket(name = "greeting-files")
-    private dev.ko.runtime.storage.KoBucket files;
+    private KoBucketStore files;
+
+    @KoSecret("greeting-api-key")
+    private KoSecretValue apiKey;
 
     /** Say hello to someone. */
     @KoAPI(method = "GET", path = "/hello/:name")
@@ -69,6 +76,16 @@ public class GreetingService {
     @KoAPI(method = "GET", path = "/files")
     public List<String> listFiles() {
         return files.list();
+    }
+
+    /** Check if the API key secret is configured. */
+    @KoAPI(method = "GET", path = "/secret-check")
+    public Map<String, Object> checkSecret() {
+        String value = apiKey.value();
+        return Map.of(
+                "name", apiKey.name(),
+                "configured", value != null
+        );
     }
 
     /** Handle greeting events — log them. */
