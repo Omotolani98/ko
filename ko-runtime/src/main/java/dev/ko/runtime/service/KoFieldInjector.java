@@ -6,15 +6,15 @@ import dev.ko.annotations.KoDatabase;
 import dev.ko.annotations.KoPubSub;
 import dev.ko.annotations.KoSecret;
 import dev.ko.annotations.KoService;
-import dev.ko.annotations.KoServiceClient;
 import dev.ko.runtime.cache.KoCacheCluster;
+import dev.ko.annotations.KoServiceClient;
 import dev.ko.runtime.database.KoSQLDatabase;
 import dev.ko.runtime.pubsub.KoTopic;
 import dev.ko.runtime.secrets.KoSecretProvider;
 import dev.ko.runtime.secrets.KoSecretValue;
-import dev.ko.runtime.storage.KoBucketStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import dev.ko.runtime.storage.KoBucketStore;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 
