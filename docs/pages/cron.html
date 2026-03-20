@@ -45,6 +45,55 @@
 * * * * *</pre>
       </div>
 
+      <h2>Common Expressions</h2>
+
+      <table class="mapping-table">
+        <thead>
+          <tr><th>Expression</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>* * * * *</td><td>Every minute</td></tr>
+          <tr><td>*/5 * * * *</td><td>Every 5 minutes</td></tr>
+          <tr><td>*/15 * * * *</td><td>Every 15 minutes</td></tr>
+          <tr><td>0 * * * *</td><td>Every hour (at minute :00)</td></tr>
+          <tr><td>0 */2 * * *</td><td>Every 2 hours</td></tr>
+          <tr><td>0 0 * * *</td><td>Every day at midnight</td></tr>
+          <tr><td>0 3 * * *</td><td>Every day at 3:00 AM</td></tr>
+          <tr><td>30 8 * * *</td><td>Every day at 8:30 AM</td></tr>
+          <tr><td>0 9 * * 1-5</td><td>Weekdays at 9:00 AM</td></tr>
+          <tr><td>0 0 1 * *</td><td>First day of every month at midnight</td></tr>
+          <tr><td>0 0 * * 0</td><td>Every Sunday at midnight</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout info">
+        <div class="callout-title">Note</div>
+        <p>The smallest granularity is <strong>1 minute</strong>. There is no seconds field in Ko&#x323;&#x301; cron expressions. Use <code>*/1 * * * *</code> or <code>* * * * *</code> for every-minute execution.</p>
+      </div>
+
+      <h2>How It Works</h2>
+
+      <div class="prose">
+        <p>
+          At startup, the runtime reads <code>@KoCron</code> methods from the Application Model,
+          parses the cron expression, and schedules each job. Jobs run on <strong>virtual threads</strong>
+          and automatically reschedule after each execution. The scheduler computes the next
+          execution time from the cron expression, so jobs always fire at the correct wall-clock time.
+        </p>
+      </div>
+
+      <div class="flow-diagram">
+        <div class="flow-row">
+          <div class="flow-box amber">@KoCron</div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-box blue">App Model</div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-box purple">KoCronScheduler</div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-box green">Virtual Thread</div>
+        </div>
+      </div>
+
       <div class="callout warn">
         <div class="callout-title">Compile-Time Validation</div>
         <p>Invalid cron expressions like <code>"60 * * * *"</code> (minute > 59) or <code>"* * *"</code> (wrong field count) will cause a build failure with a descriptive error message.</p>
