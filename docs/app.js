@@ -1,6 +1,12 @@
 (function () {
   'use strict';
 
+  // Compute base URL for fetch() so page fragments load correctly
+  // regardless of where the site is hosted (GitHub Pages subpath, custom domain, etc.)
+  // We derive it from the script's own absolute URL.
+  const scriptSrc = (document.currentScript || document.querySelector('script[src*="app.js"]')).src;
+  const baseURL = scriptSrc.substring(0, scriptSrc.lastIndexOf('/') + 1);
+
   const pageCache = new Map();
   const landingView = document.getElementById('landingView');
   const docsView = document.getElementById('docsView');
@@ -49,7 +55,7 @@
     pageContent.innerHTML = '<div style="padding:4rem 0;color:var(--text-dim);text-align:center;">Loading...</div>';
 
     try {
-      const resp = await fetch(`pages/${pageId}.html`);
+      const resp = await fetch(`${baseURL}pages/${pageId}.html`);
       if (!resp.ok) throw new Error('Page not found');
       const html = await resp.text();
       pageCache.set(pageId, html);
