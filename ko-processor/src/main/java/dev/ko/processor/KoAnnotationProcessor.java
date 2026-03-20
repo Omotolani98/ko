@@ -2,6 +2,7 @@ package dev.ko.processor;
 
 import dev.ko.annotations.KoService;
 import dev.ko.processor.emitter.AppModelEmitter;
+import dev.ko.processor.emitter.ServiceClientEmitter;
 import dev.ko.processor.model.*;
 import dev.ko.processor.scanner.PubSubScanner;
 import dev.ko.processor.scanner.ServiceScanner;
@@ -35,6 +36,7 @@ public class KoAnnotationProcessor extends AbstractProcessor {
 
         ServiceScanner serviceScanner = new ServiceScanner(processingEnv);
         List<ServiceModel> services = new ArrayList<>();
+        Map<String, TypeElement> serviceElements2 = new LinkedHashMap<>();
         Map<String, List<PubSubScanner.PubSubInfo>> allPubInfos = new LinkedHashMap<>();
         Map<String, List<PubSubScanner.SubscribeInfo>> allSubInfos = new LinkedHashMap<>();
         boolean hasErrors = false;
@@ -69,6 +71,7 @@ public class KoAnnotationProcessor extends AbstractProcessor {
 
             ServiceModel serviceModel = serviceScanner.scan(typeElement);
             services.add(serviceModel);
+            serviceElements2.put(serviceModel.name(), typeElement);
 
             allPubInfos.put(serviceModel.name(), serviceScanner.scanPubSubInfos(typeElement));
             allSubInfos.put(serviceModel.name(), serviceScanner.scanSubscribeInfos(typeElement));
@@ -112,6 +115,20 @@ public class KoAnnotationProcessor extends AbstractProcessor {
                     Diagnostic.Kind.ERROR,
                     "Ko: Failed to write ko-app-model.json: " + e.getMessage()
             );
+        }
+
+        // Generate service client classes
+        ServiceClientEmitter clientEmitter = new ServiceClientEmitter(processingEnv.getFiler());
+        for (ServiceModel service : services) {
+            try {
+                TypeElement typeElement = serviceElements2.get(service.name());
+                clientEmitter.emit(service, typeElement);
+            } catch (IOException e) {
+                processingEnv.getMessager().printMessage(
+                        Diagnostic.Kind.ERROR,
+                        "Ko: Failed to generate client for " + service.name() + ": " + e.getMessage()
+                );
+            }
         }
 
         return true;

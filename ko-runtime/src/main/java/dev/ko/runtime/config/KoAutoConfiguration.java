@@ -23,7 +23,11 @@ import dev.ko.runtime.pubsub.InMemoryPubSubProvider;
 import dev.ko.runtime.pubsub.KoPubSubProvider;
 import dev.ko.runtime.pubsub.KoSubscriberRegistrar;
 import dev.ko.runtime.pubsub.KoTopic;
+import dev.ko.runtime.secrets.EnvVarSecretProvider;
+import dev.ko.runtime.secrets.KoSecretProvider;
+import dev.ko.runtime.service.InProcessCaller;
 import dev.ko.runtime.service.KoFieldInjector;
+import dev.ko.runtime.service.KoServiceCaller;
 import dev.ko.runtime.service.KoServiceRegistrar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,10 +85,18 @@ public class KoAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(KoSecretProvider.class)
+    public KoSecretProvider koSecretProvider() {
+        return new EnvVarSecretProvider();
+    }
+
+    @Bean
     public KoFieldInjector koFieldInjector(AppModel appModel,
                                            KoDatabaseProvider databaseProvider,
                                            KoPubSubProvider pubSubProvider,
-                                           KoStorageProvider storageProvider) {
+                                           KoStorageProvider storageProvider,
+                                           KoSecretProvider secretProvider,
+                                           KoServiceCaller serviceCaller) {
         Map<String, KoSQLDatabase> databases = new HashMap<>();
         Map<String, KoCache<?, ?>> caches = new HashMap<>();
         Map<String, KoTopic<?>> topics = new HashMap<>();
@@ -118,7 +130,13 @@ public class KoAutoConfiguration {
             }
         }
 
-        return new KoFieldInjector(databases, caches, topics, buckets);
+        return new KoFieldInjector(databases, caches, topics, buckets, secretProvider, serviceCaller);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(KoServiceCaller.class)
+    public KoServiceCaller koServiceCaller(ApplicationContext context, AppModel appModel) {
+        return new InProcessCaller(context, appModel);
     }
 
     @Bean
