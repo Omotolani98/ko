@@ -7,10 +7,12 @@ import dev.ko.annotations.KoPubSub;
 import dev.ko.annotations.KoSecret;
 import dev.ko.annotations.KoService;
 import dev.ko.annotations.KoServiceClient;
+import dev.ko.runtime.cache.KoCacheCluster;
 import dev.ko.runtime.database.KoSQLDatabase;
 import dev.ko.runtime.pubsub.KoTopic;
 import dev.ko.runtime.secrets.KoSecretProvider;
 import dev.ko.runtime.secrets.KoSecretValue;
+import dev.ko.runtime.storage.KoBucketStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -29,17 +31,17 @@ public class KoFieldInjector implements BeanPostProcessor {
     private static final Logger log = LoggerFactory.getLogger(KoFieldInjector.class);
 
     private final Map<String, KoSQLDatabase> databases;
-    private final Map<String, dev.ko.runtime.cache.KoCache<?, ?>> caches;
+    private final Map<String, KoCacheCluster<?, ?>> caches;
     private final Map<String, KoTopic<?>> topics;
-    private final Map<String, dev.ko.runtime.storage.KoBucket> buckets;
+    private final Map<String, KoBucketStore> buckets;
     private final KoSecretProvider secretProvider;
     private final KoServiceCaller serviceCaller;
 
     public KoFieldInjector(
             Map<String, KoSQLDatabase> databases,
-            Map<String, dev.ko.runtime.cache.KoCache<?, ?>> caches,
+            Map<String, KoCacheCluster<?, ?>> caches,
             Map<String, KoTopic<?>> topics,
-            Map<String, dev.ko.runtime.storage.KoBucket> buckets,
+            Map<String, KoBucketStore> buckets,
             KoSecretProvider secretProvider,
             KoServiceCaller serviceCaller) {
         this.databases = databases;
