@@ -9,7 +9,7 @@ before:
 builds:
   - id: ko
     dir: .
-    main: .
+    main: ./cmd/ko
     binary: ko
     env:
       - CGO_ENABLED=0
