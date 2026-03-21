@@ -1,0 +1,53 @@
+{
+  "metadata": {
+    "app_id": "hello-world",
+    "env_name": "local",
+    "env_type": "development",
+    "cloud": "local",
+    "base_url": "http://localhost:8080"
+  },
+  "sql_servers": [
+    {
+      "host": "localhost:mem",
+      "databases": {
+        "greetings": {
+          "username": "sa",
+          "password": "",
+          "max_connections": 10,
+          "min_connections": 2
+        }
+      }
+    }
+  ],
+  "pubsub": [
+    {
+      "type": "in_memory",
+      "topics": {
+        "greeting-events": {
+          "name": "greeting-events",
+          "partitions": 1,
+          "subscriptions": {
+            "log-greeting": {
+              "name": "log-greeting"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "redis": {},
+  "object_storage": [
+    {
+      "type": "local",
+      "buckets": {
+        "greeting-files": {
+          "name": "greeting-files"
+        }
+      }
+    }
+  ],
+  "service_discovery": {},
+  "secrets": {
+    "greeting-api-key": "ko-local-secret-greeting-api-key"
+  }
+}
