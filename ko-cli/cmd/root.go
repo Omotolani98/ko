@@ -3,13 +3,20 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"runtime/debug"
 
 	"github.com/Omotolani98/ko/ko-cli/internal/style"
 	"github.com/spf13/cobra"
 )
 
-// version is set at build time via ldflags.
-var version = "dev"
+// version is set at build time via ldflags (GoReleaser).
+// Falls back to Go module version from debug.BuildInfo (go install).
+var version = func() string {
+	if info, ok := debug.ReadBuildInfo(); ok && info.Main.Version != "" && info.Main.Version != "(devel)" {
+		return info.Main.Version
+	}
+	return "dev"
+}()
 
 var rootCmd = &cobra.Command{
 	Use:   "ko",
