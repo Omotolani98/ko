@@ -25,7 +25,9 @@ public class KoPlugin implements Plugin<Project> {
 
         KoExtension extension = project.getExtensions().create("ko", KoExtension.class);
         extension.getAppName().convention(project.getName());
-        extension.getVersion().convention("0.1.0-SNAPSHOT");
+        // Default Ko version to the plugin's own version
+        String pluginVersion = KoPlugin.class.getPackage().getImplementationVersion();
+        extension.getVersion().convention(pluginVersion != null ? pluginVersion : "0.1.0");
 
         // Add Ko dependencies after project evaluation so the extension values are resolved
         project.afterEvaluate(p -> {

@@ -18,6 +18,12 @@ repositories {
     mavenCentral()
 }
 
+tasks.withType<Jar> {
+    manifest {
+        attributes("Implementation-Version" to project.version)
+    }
+}
+
 gradlePlugin {
     plugins {
         create("ko") {

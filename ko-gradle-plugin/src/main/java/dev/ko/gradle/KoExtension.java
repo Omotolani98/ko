@@ -22,7 +22,7 @@ public abstract class KoExtension {
 
     /**
      * The Ko framework version for dependency resolution.
-     * Defaults to "0.1.0-SNAPSHOT".
+     * Defaults to the plugin's own version.
      */
     public abstract Property<String> getVersion();
 }

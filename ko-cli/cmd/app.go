@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/Omotolani98/ko/ko-cli/internal"
 	"github.com/Omotolani98/ko/ko-cli/internal/scaffold"
 	"github.com/Omotolani98/ko/ko-cli/internal/style"
 	"github.com/spf13/cobra"
@@ -67,11 +68,15 @@ func createApp(cmd *cobra.Command, args []string) error {
 	fmt.Println(style.Info(fmt.Sprintf("Creating new Kọ́ application: %s", style.Service(appName))))
 	fmt.Println()
 
+	koVersion := internal.FetchLatestKoVersion()
+	fmt.Println(style.Info(fmt.Sprintf("Using Kọ́ framework version: %s", style.Dim.Render(koVersion))))
+	fmt.Println()
+
 	opts := scaffold.Options{
 		Name:          appName,
 		Package:       pkg,
 		OutputDir:     cwd,
-		KoVersion:     "0.1.0-SNAPSHOT",
+		KoVersion:     koVersion,
 		SpringVersion: "3.4.1",
 	}
 
