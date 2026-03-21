@@ -7,7 +7,10 @@ import dev.ko.runtime.api.KoRequestBodyResolver;
 import dev.ko.runtime.cron.KoCronScheduler;
 import dev.ko.runtime.database.KoDatabaseProvider;
 import dev.ko.runtime.database.LocalDatabaseProvider;
+import dev.ko.runtime.errors.KoExceptionHandler;
 import dev.ko.runtime.model.AppModel;
+import dev.ko.runtime.cache.InMemoryCacheProvider;
+import dev.ko.runtime.cache.KoCacheProvider;
 import dev.ko.runtime.storage.KoStorageProvider;
 import dev.ko.runtime.storage.LocalFileStorageProvider;
 import dev.ko.runtime.pubsub.InMemoryPubSubProvider;
@@ -62,6 +65,12 @@ public class KoAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(KoCacheProvider.class)
+    public KoCacheProvider koCacheProvider() {
+        return new InMemoryCacheProvider();
+    }
+
+    @Bean
     @ConditionalOnMissingBean(KoStorageProvider.class)
     public KoStorageProvider koStorageProvider() {
         Path storagePath = Path.of(System.getProperty("java.io.tmpdir"), "ko-storage");
@@ -92,6 +101,12 @@ public class KoAutoConfiguration {
             AppModel appModel,
             ObjectMapper objectMapper) {
         return new KoEndpointRegistrar(handlerMapping, context, appModel, objectMapper);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(KoExceptionHandler.class)
+    public KoExceptionHandler koExceptionHandler() {
+        return new KoExceptionHandler();
     }
 
     @Bean

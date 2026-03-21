@@ -1,5 +1,5 @@
 plugins {
-    java
+    id("dev.ko")
     alias(libs.plugins.spring.boot)
 }
 
@@ -18,18 +18,17 @@ repositories {
     mavenCentral()
 }
 
-dependencies {
-    implementation(project(":ko-annotations"))
-    implementation(project(":ko-runtime"))
-    annotationProcessor(project(":ko-processor"))
+ko {
+    appName = "hello-world"
 }
 
-tasks.withType<JavaCompile> {
-    options.compilerArgs.addAll(listOf(
-        "-parameters",
-        "-Ako.app.name=hello-world"
-    ))
-    options.encoding = "UTF-8"
+// In-repo development: substitute Maven coordinates with local project modules
+configurations.all {
+    resolutionStrategy.dependencySubstitution {
+        substitute(module("dev.ko:ko-annotations")).using(project(":ko-annotations"))
+        substitute(module("dev.ko:ko-runtime")).using(project(":ko-runtime"))
+        substitute(module("dev.ko:ko-processor")).using(project(":ko-processor"))
+    }
 }
 
 springBoot {

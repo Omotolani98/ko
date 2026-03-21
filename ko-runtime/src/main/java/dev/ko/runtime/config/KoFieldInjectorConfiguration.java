@@ -1,6 +1,7 @@
 package dev.ko.runtime.config;
 
 import dev.ko.runtime.cache.KoCacheCluster;
+import dev.ko.runtime.cache.KoCacheProvider;
 import dev.ko.runtime.database.KoDatabaseProvider;
 import dev.ko.runtime.database.KoMigrationRunner;
 import dev.ko.runtime.database.KoSQLDatabase;
@@ -50,6 +51,7 @@ public class KoFieldInjectorConfiguration {
     @Bean
     public static KoFieldInjector koFieldInjector(AppModel appModel,
                                                    KoDatabaseProvider databaseProvider,
+                                                   KoCacheProvider cacheProvider,
                                                    KoPubSubProvider pubSubProvider,
                                                    KoStorageProvider storageProvider,
                                                    KoSecretProvider secretProvider,
@@ -68,7 +70,9 @@ public class KoFieldInjectorConfiguration {
                 }
             }
             for (CacheModel cache : service.caches()) {
-                caches.put(cache.name(), new KoCacheCluster<>(cache.name(), cache.ttl()));
+                if (!caches.containsKey(cache.name())) {
+                    caches.put(cache.name(), cacheProvider.getOrCreateCache(cache.name(), cache.ttl()));
+                }
             }
             if (service.buckets() != null) {
                 for (BucketModel bucket : service.buckets()) {
