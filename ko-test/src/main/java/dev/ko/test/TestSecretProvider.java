@@ -43,6 +43,7 @@ public class TestSecretProvider implements KoSecretProvider {
         secrets.clear();
     }
 
+    /** {@inheritDoc} */
     @Override
     public String resolve(String name) {
         return secrets.get(name);

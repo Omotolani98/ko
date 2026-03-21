@@ -9,6 +9,12 @@ public final class KoSecretValue {
     private final String name;
     private final KoSecretProvider provider;
 
+    /**
+     * Creates a new KoSecretValue.
+     *
+     * @param name the secret name
+     * @param provider the secret provider used for resolution
+     */
     public KoSecretValue(String name, KoSecretProvider provider) {
         this.name = name;
         this.provider = provider;

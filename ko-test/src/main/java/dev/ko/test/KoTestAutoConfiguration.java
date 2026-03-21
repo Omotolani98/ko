@@ -35,51 +35,99 @@ import java.util.Map;
 @ConditionalOnResource(resources = "classpath:ko-app-model.json")
 public class KoTestAutoConfiguration {
 
+    /**
+     * Creates a {@link TestPubSub} as the primary pub/sub provider.
+     *
+     * @return the test pub/sub provider
+     */
     @Bean
     @Primary
     public KoPubSubProvider testPubSubProvider() {
         return new TestPubSub();
     }
 
+    /**
+     * Exposes the test pub/sub provider as a {@link TestPubSub} bean for direct inspection.
+     *
+     * @param pubSubProvider the primary pub/sub provider
+     * @return the test pub/sub instance
+     */
     @Bean
     public TestPubSub testPubSub(KoPubSubProvider pubSubProvider) {
         return (TestPubSub) pubSubProvider;
     }
 
+    /**
+     * Creates a {@link TestSecretProvider} as the primary secret provider.
+     *
+     * @return the test secret provider
+     */
     @Bean
     @Primary
     public KoSecretProvider testSecretProvider() {
         return new TestSecretProvider();
     }
 
+    /**
+     * Exposes the test secret provider as a {@link TestSecretProvider} bean for direct manipulation.
+     *
+     * @param secretProvider the primary secret provider
+     * @return the test secret provider instance
+     */
     @Bean
     public TestSecretProvider testSecrets(KoSecretProvider secretProvider) {
         return (TestSecretProvider) secretProvider;
     }
 
+    /**
+     * Creates a {@link MockServiceClient} as the primary service caller.
+     *
+     * @return the mock service caller
+     */
     @Bean
     @Primary
     public KoServiceCaller mockServiceCaller() {
         return new MockServiceClient();
     }
 
+    /**
+     * Exposes the mock service caller as a {@link MockServiceClient} bean for stubbing and inspection.
+     *
+     * @param serviceCaller the primary service caller
+     * @return the mock service client instance
+     */
     @Bean
     public MockServiceClient mockServiceClient(KoServiceCaller serviceCaller) {
         return (MockServiceClient) serviceCaller;
     }
 
+    /**
+     * Creates a {@link LocalDatabaseProvider} as the primary database provider for tests.
+     *
+     * @return the test database provider
+     */
     @Bean
     @Primary
     public KoDatabaseProvider testDatabaseProvider() {
         return new LocalDatabaseProvider();
     }
 
+    /**
+     * Creates an {@link InMemoryCacheProvider} as the primary cache provider for tests.
+     *
+     * @return the test cache provider
+     */
     @Bean
     @Primary
     public KoCacheProvider testCacheProvider() {
         return new InMemoryCacheProvider();
     }
 
+    /**
+     * Creates a {@link LocalFileStorageProvider} as the primary storage provider for tests.
+     *
+     * @return the test storage provider
+     */
     @Bean
     @Primary
     public KoStorageProvider testStorageProvider() {
@@ -87,6 +135,13 @@ public class KoTestAutoConfiguration {
         return new LocalFileStorageProvider(storagePath);
     }
 
+    /**
+     * Creates a {@link TestDatabase} bean from all databases declared in the app model.
+     *
+     * @param appModel the application model
+     * @param databaseProvider the database provider
+     * @return the test database helper
+     */
     @Bean
     public TestDatabase testDatabase(AppModel appModel, KoDatabaseProvider databaseProvider) {
         Map<String, KoSQLDatabase> databases = new HashMap<>();

@@ -41,6 +41,7 @@ public class MockServiceClient implements KoServiceCaller {
         this.fallback = fallback;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Object call(String service, String method, String path, Object[] args) {
         callHistory.add(new ServiceCall(service, method, path, args));

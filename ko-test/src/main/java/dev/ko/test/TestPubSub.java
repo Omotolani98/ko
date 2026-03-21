@@ -34,6 +34,7 @@ public class TestPubSub implements KoPubSubProvider {
     private final Map<String, List<SubscriptionHandler<?>>> subscriptions = new ConcurrentHashMap<>();
     private final Map<String, CountDownLatch> latches = new ConcurrentHashMap<>();
 
+    /** {@inheritDoc} */
     @Override
     @SuppressWarnings("unchecked")
     public <T> void publish(String topic, T message) {
@@ -56,6 +57,7 @@ public class TestPubSub implements KoPubSubProvider {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public <T> void subscribe(String topic, String subscription, Class<T> type, Consumer<T> handler) {
         subscriptions
@@ -63,6 +65,7 @@ public class TestPubSub implements KoPubSubProvider {
                 .add(new SubscriptionHandler<>(subscription, type, handler));
     }
 
+    /** {@inheritDoc} */
     @Override
     public void close() {
         reset();

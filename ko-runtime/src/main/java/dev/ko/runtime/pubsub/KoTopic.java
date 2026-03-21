@@ -22,11 +22,22 @@ public class KoTopic<T> {
     private final String name;
     private final KoPubSubProvider provider;
 
+    /**
+     * Creates a new KoTopic.
+     *
+     * @param name the topic name
+     * @param provider the pub/sub provider
+     */
     public KoTopic(String name, KoPubSubProvider provider) {
         this.name = name;
         this.provider = provider;
     }
 
+    /**
+     * Returns the topic name.
+     *
+     * @return the topic name
+     */
     public String getName() {
         return name;
     }

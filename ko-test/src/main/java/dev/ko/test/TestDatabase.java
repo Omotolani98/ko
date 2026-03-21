@@ -29,6 +29,11 @@ public class TestDatabase {
 
     private final Map<String, KoSQLDatabase> databases;
 
+    /**
+     * Creates a new TestDatabase wrapping the given database map.
+     *
+     * @param databases map of database name to {@link KoSQLDatabase} instance
+     */
     public TestDatabase(Map<String, KoSQLDatabase> databases) {
         this.databases = databases;
     }

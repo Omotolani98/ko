@@ -32,15 +32,31 @@ public class KoSQLDatabase {
     private final String name;
     private final DataSource dataSource;
 
+    /**
+     * Creates a new KoSQLDatabase.
+     *
+     * @param name the logical database name
+     * @param dataSource the JDBC data source
+     */
     public KoSQLDatabase(String name, DataSource dataSource) {
         this.name = name;
         this.dataSource = dataSource;
     }
 
+    /**
+     * Returns the logical database name.
+     *
+     * @return the database name
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Returns the underlying JDBC data source.
+     *
+     * @return the data source
+     */
     public DataSource getDataSource() {
         return dataSource;
     }
@@ -114,8 +130,17 @@ public class KoSQLDatabase {
         }
     }
 
+    /**
+     * Functional interface for transactional operations.
+     */
     @FunctionalInterface
     public interface TxAction {
+        /**
+         * Executes operations within a transaction.
+         *
+         * @param tx the transaction context
+         * @throws Exception if the transaction should be rolled back
+         */
         void execute(TxContext tx) throws Exception;
     }
 
@@ -125,10 +150,23 @@ public class KoSQLDatabase {
     public static class TxContext {
         private final Connection conn;
 
+        /**
+         * Creates a transaction context wrapping the given connection.
+         *
+         * @param conn the JDBC connection
+         */
         TxContext(Connection conn) {
             this.conn = conn;
         }
 
+        /**
+         * Execute a query within this transaction and return all rows.
+         *
+         * @param sql the SQL query
+         * @param params the query parameters
+         * @return list of row maps
+         * @throws SQLException if the query fails
+         */
         public List<Map<String, Object>> query(String sql, Object... params) throws SQLException {
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
                 bindParams(ps, params);
@@ -138,6 +176,14 @@ public class KoSQLDatabase {
             }
         }
 
+        /**
+         * Execute a query within this transaction and return the first row, or null.
+         *
+         * @param sql the SQL query
+         * @param params the query parameters
+         * @return the first row as a map, or {@code null}
+         * @throws SQLException if the query fails
+         */
         public Map<String, Object> queryRow(String sql, Object... params) throws SQLException {
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
                 bindParams(ps, params);
@@ -150,6 +196,14 @@ public class KoSQLDatabase {
             }
         }
 
+        /**
+         * Execute an INSERT, UPDATE, or DELETE within this transaction.
+         *
+         * @param sql the SQL statement
+         * @param params the statement parameters
+         * @return the number of affected rows
+         * @throws SQLException if the statement fails
+         */
         public int exec(String sql, Object... params) throws SQLException {
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
                 bindParams(ps, params);

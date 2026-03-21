@@ -12,6 +12,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
  */
 public class KoTestExtension implements BeforeEachCallback, AfterEachCallback {
 
+    /** {@inheritDoc} */
     @Override
     public void beforeEach(ExtensionContext context) {
         var appContext = SpringExtension.getApplicationContext(context);
@@ -22,6 +23,7 @@ public class KoTestExtension implements BeforeEachCallback, AfterEachCallback {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public void afterEach(ExtensionContext context) {
         // Future: clean up test database state, reset mock service clients, etc.

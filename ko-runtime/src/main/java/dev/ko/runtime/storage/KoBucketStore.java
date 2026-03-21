@@ -25,11 +25,22 @@ public class KoBucketStore {
     private final String name;
     private final KoStorageProvider provider;
 
+    /**
+     * Creates a new KoBucketStore.
+     *
+     * @param name the bucket name
+     * @param provider the storage provider
+     */
     public KoBucketStore(String name, KoStorageProvider provider) {
         this.name = name;
         this.provider = provider;
     }
 
+    /**
+     * Returns the bucket name.
+     *
+     * @return the bucket name
+     */
     public String getName() {
         return name;
     }

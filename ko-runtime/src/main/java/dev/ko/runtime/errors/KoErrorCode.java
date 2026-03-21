@@ -36,15 +36,31 @@ public enum KoErrorCode {
     private final int httpStatus;
     private final String code;
 
+    /**
+     * Creates an error code.
+     *
+     * @param httpStatus the HTTP status code
+     * @param code the string error code
+     */
     KoErrorCode(int httpStatus, String code) {
         this.httpStatus = httpStatus;
         this.code = code;
     }
 
+    /**
+     * Returns the HTTP status code.
+     *
+     * @return the HTTP status code
+     */
     public int httpStatus() {
         return httpStatus;
     }
 
+    /**
+     * Returns the string error code.
+     *
+     * @return the error code string
+     */
     public String code() {
         return code;
     }
