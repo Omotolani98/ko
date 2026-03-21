@@ -6,7 +6,7 @@ import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.compile.JavaCompile;
 
 /**
- * The Kọ́ Gradle plugin. Applying {@code id("dev.ko")} to a project:
+ * The Kọ́ Gradle plugin. Applying {@code id("io.github.omotolani98.ko")} to a project:
  * <ul>
  *   <li>Applies the {@code java} plugin if not already applied</li>
  *   <li>Adds Ko framework dependencies (ko-annotations, ko-runtime, ko-processor)</li>
@@ -17,7 +17,7 @@ import org.gradle.api.tasks.compile.JavaCompile;
  */
 public class KoPlugin implements Plugin<Project> {
 
-    private static final String KO_GROUP = "dev.ko";
+    private static final String KO_GROUP = "io.github.omotolani98";
 
     @Override
     public void apply(Project project) {

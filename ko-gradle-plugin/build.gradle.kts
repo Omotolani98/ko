@@ -1,9 +1,10 @@
 plugins {
     `java-gradle-plugin`
     `maven-publish`
+    signing
 }
 
-group = "dev.ko"
+group = "io.github.omotolani98"
 version = "0.1.0-SNAPSHOT"
 
 java {
@@ -20,10 +21,14 @@ repositories {
 gradlePlugin {
     plugins {
         create("ko") {
-            id = "dev.ko"
+            id = "io.github.omotolani98.ko"
             implementationClass = "dev.ko.gradle.KoPlugin"
         }
     }
+}
+
+signing {
+    sign(publishing.publications)
 }
 
 publishing {

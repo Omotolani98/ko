@@ -15,7 +15,7 @@ var appCmd = &cobra.Command{
 	Use:   "app --name <app-name>",
 	Short: "Create a new Kọ́ application",
 	Long: `Scaffold a new Kọ́ project with all the boilerplate:
-  - Gradle build with the dev.ko plugin
+  - Gradle build with the io.github.omotolani98.ko plugin
   - Spring Boot configuration
   - A sample service with @KoService and @KoAPI annotations
   - A test class using ko-test

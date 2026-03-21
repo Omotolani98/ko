@@ -188,7 +188,7 @@ rootProject.name = "%s"
 
 func buildGradle(opts Options) string {
 	return fmt.Sprintf(`plugins {
-    id("dev.ko") version "%s"
+    id("io.github.omotolani98.ko") version "%s"
     id("org.springframework.boot") version "%s"
 }
 
@@ -211,7 +211,7 @@ java {
 }
 
 dependencies {
-    testImplementation("dev.ko:ko-test:%s")
+    testImplementation("io.github.omotolani98:ko-test:%s")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 
@@ -235,7 +235,7 @@ spring-boot = "%s"
 
 [plugins]
 spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
-ko = { id = "dev.ko", version.ref = "ko" }
+ko = { id = "io.github.omotolani98.ko", version.ref = "ko" }
 `, opts.KoVersion, opts.SpringVersion)
 }
 

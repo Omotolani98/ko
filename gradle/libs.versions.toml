@@ -26,3 +26,4 @@ h2-database = { module = "com.h2database:h2", version = "2.2.224" }
 [plugins]
 spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
 spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "spring-dependency-management" }
+maven-publish = { id = "com.vanniktech.maven.publish", version = "0.30.0" }

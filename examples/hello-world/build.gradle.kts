@@ -1,5 +1,5 @@
 plugins {
-    id("dev.ko")
+    id("io.github.omotolani98.ko")
     alias(libs.plugins.spring.boot)
 }
 
@@ -29,9 +29,9 @@ dependencies {
 // In-repo development: substitute Maven coordinates with local project modules
 configurations.all {
     resolutionStrategy.dependencySubstitution {
-        substitute(module("dev.ko:ko-annotations")).using(project(":ko-annotations"))
-        substitute(module("dev.ko:ko-runtime")).using(project(":ko-runtime"))
-        substitute(module("dev.ko:ko-processor")).using(project(":ko-processor"))
+        substitute(module("io.github.omotolani98:ko-annotations")).using(project(":ko-annotations"))
+        substitute(module("io.github.omotolani98:ko-runtime")).using(project(":ko-runtime"))
+        substitute(module("io.github.omotolani98:ko-processor")).using(project(":ko-processor"))
     }
 }
 
