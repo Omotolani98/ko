@@ -62,18 +62,3 @@ release:
   draft: false
   prerelease: auto
   name_template: "ko v{{.Version}}"
-
-brews:
-  - repository:
-      owner: Omotolani98
-      name: homebrew-tap
-      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
-    directory: Formula
-    homepage: "https://github.com/Omotolani98/ko"
-    description: "CLI for the Kọ́ Java framework — type-safe distributed systems"
-    license: "MPL-2.0"
-    install: |
-      bin.install "ko"
-    test: |
-      system "#{bin}/ko", "version"
-    skip_upload: auto
