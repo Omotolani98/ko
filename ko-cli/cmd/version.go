@@ -11,7 +11,11 @@ var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Print version information",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("%s %s\n", style.KoPrefix, style.BoldPri.Render("v"+version))
+		v := version
+		if len(v) > 0 && v[0] != 'v' {
+			v = "v" + v
+		}
+		fmt.Printf("%s %s\n", style.KoPrefix, style.BoldPri.Render(v))
 	},
 }
 
