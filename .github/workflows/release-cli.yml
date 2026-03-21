@@ -3,7 +3,7 @@ name: Release CLI
 on:
   push:
     tags:
-      - "v*"
+      - "ko-cli/v*"
 
 permissions:
   contents: write
@@ -20,6 +20,12 @@ jobs:
         with:
           go-version: "1.23"
           cache-dependency-path: ko-cli/go.sum
+
+      # Strip ko-cli/ prefix so GoReleaser sees a clean semver tag
+      - name: Retag for GoReleaser
+        run: |
+          TAG=${GITHUB_REF#refs/tags/ko-cli/}
+          git tag -f "$TAG"
 
       - uses: goreleaser/goreleaser-action@v6
         with:
