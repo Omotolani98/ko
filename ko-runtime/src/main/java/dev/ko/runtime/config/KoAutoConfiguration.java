@@ -48,6 +48,12 @@ public class KoAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(InfraConfig.class)
+    public InfraConfig koInfraConfig() {
+        return InfraConfigLoader.load();
+    }
+
+    @Bean
     public static KoServiceRegistrar koServiceRegistrar() {
         return new KoServiceRegistrar();
     }

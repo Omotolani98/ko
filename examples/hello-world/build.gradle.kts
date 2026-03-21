@@ -22,6 +22,10 @@ ko {
     appName = "hello-world"
 }
 
+dependencies {
+    testImplementation(project(":ko-test"))
+}
+
 // In-repo development: substitute Maven coordinates with local project modules
 configurations.all {
     resolutionStrategy.dependencySubstitution {

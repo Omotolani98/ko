@@ -1,0 +1,79 @@
+version: 2
+
+project_name: ko
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: ko
+    dir: .
+    main: .
+    binary: ko
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X github.com/Omotolani98/ko/ko-cli/cmd.version={{.Version}}
+    ignore:
+      - goos: windows
+        goarch: arm64
+
+archives:
+  - id: ko
+    formats:
+      - tar.gz
+    format_overrides:
+      - goos: windows
+        formats:
+          - zip
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- .Version }}_
+      {{- .Os }}_
+      {{- .Arch }}
+    files:
+      - none*
+
+checksum:
+  name_template: "checksums.txt"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+      - "^ci:"
+
+release:
+  github:
+    owner: Omotolani98
+    name: ko
+  draft: false
+  prerelease: auto
+  name_template: "ko v{{.Version}}"
+
+brews:
+  - repository:
+      owner: Omotolani98
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    directory: Formula
+    homepage: "https://github.com/Omotolani98/ko"
+    description: "CLI for the Kọ́ Java framework — type-safe distributed systems"
+    license: "MPL-2.0"
+    install: |
+      bin.install "ko"
+    test: |
+      system "#{bin}/ko", "version"
+    skip_upload: auto
