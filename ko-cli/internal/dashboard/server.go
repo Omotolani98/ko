@@ -6,9 +6,12 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/Omotolani98/ko/ko-cli/internal/traces"
 )
 
 // Server serves the Ko dev dashboard and API endpoints.
@@ -18,14 +21,16 @@ type Server struct {
 	appPort    int
 	startTime  time.Time
 	httpServer *http.Server
+	traceStore *traces.TraceStore
 }
 
 // NewServer creates a new dashboard server.
-func NewServer(modelJSON []byte, appPort int) *Server {
+func NewServer(modelJSON []byte, appPort int, traceStore *traces.TraceStore) *Server {
 	return &Server{
-		modelJSON: modelJSON,
-		appPort:   appPort,
-		startTime: time.Now(),
+		modelJSON:  modelJSON,
+		appPort:    appPort,
+		startTime:  time.Now(),
+		traceStore: traceStore,
 	}
 }
 
@@ -35,6 +40,9 @@ func (s *Server) Start(port int) error {
 	mux.HandleFunc("/api/model", s.handleModel)
 	mux.HandleFunc("/api/health", s.handleHealth)
 	mux.HandleFunc("/api/proxy/", s.handleProxy)
+	mux.HandleFunc("/api/traces/ingest", s.handleIngestTraces)
+	mux.HandleFunc("/api/traces/", s.handleGetTrace)
+	mux.HandleFunc("/api/traces", s.handleListTraces)
 	mux.Handle("/", spaHandler())
 
 	s.httpServer = &http.Server{
@@ -75,7 +83,7 @@ func (s *Server) handleModel(w http.ResponseWriter, _ *http.Request) {
 
 func (s *Server) handleHealth(w http.ResponseWriter, _ *http.Request) {
 	uptime := time.Since(s.startTime).Round(time.Second).String()
-	resp := map[string]interface{}{
+	resp := map[string]any{
 		"status":   "ok",
 		"app_port": s.appPort,
 		"uptime":   uptime,
@@ -86,7 +94,6 @@ func (s *Server) handleHealth(w http.ResponseWriter, _ *http.Request) {
 }
 
 func (s *Server) handleProxy(w http.ResponseWriter, r *http.Request) {
-	// Allow CORS preflight
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, X-Ko-Method")
@@ -95,13 +102,11 @@ func (s *Server) handleProxy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Extract target path (everything after /api/proxy)
 	targetPath := strings.TrimPrefix(r.URL.Path, "/api/proxy")
 	if targetPath == "" {
 		targetPath = "/"
 	}
 
-	// Get the actual HTTP method from header, default to request method
 	method := r.Header.Get("X-Ko-Method")
 	if method == "" {
 		method = r.Method
@@ -109,7 +114,6 @@ func (s *Server) handleProxy(w http.ResponseWriter, r *http.Request) {
 
 	targetURL := fmt.Sprintf("http://localhost:%d%s", s.appPort, targetPath)
 
-	// Forward the request
 	client := &http.Client{Timeout: 30 * time.Second}
 	proxyReq, err := http.NewRequestWithContext(r.Context(), method, targetURL, r.Body)
 	if err != nil {
@@ -117,7 +121,6 @@ func (s *Server) handleProxy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Forward content type
 	if ct := r.Header.Get("Content-Type"); ct != "" {
 		proxyReq.Header.Set("Content-Type", ct)
 	}
@@ -132,7 +135,6 @@ func (s *Server) handleProxy(w http.ResponseWriter, r *http.Request) {
 	}
 	defer resp.Body.Close()
 
-	// Copy response headers
 	for k, vals := range resp.Header {
 		for _, v := range vals {
 			w.Header().Add(k, v)
@@ -140,4 +142,82 @@ func (s *Server) handleProxy(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(resp.StatusCode)
 	io.Copy(w, resp.Body)
+}
+
+// handleIngestTraces receives spans from the Java runtime via POST.
+func (s *Server) handleIngestTraces(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var body struct {
+		Spans []traces.Span `json:"spans"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+
+	if s.traceStore != nil && len(body.Spans) > 0 {
+		s.traceStore.Ingest(body.Spans)
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// handleListTraces returns recent trace summaries.
+func (s *Server) handleListTraces(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	limit := 50
+	if l := r.URL.Query().Get("limit"); l != "" {
+		if n, err := strconv.Atoi(l); err == nil && n > 0 {
+			limit = n
+		}
+	}
+
+	traces := make([]traces.TraceSummary, 0)
+	if s.traceStore != nil {
+		traces = s.traceStore.List(limit)
+	}
+
+	json.NewEncoder(w).Encode(map[string]any{
+		"traces": traces,
+	})
+}
+
+// handleGetTrace returns a single trace with all spans.
+func (s *Server) handleGetTrace(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	// Extract trace ID from /api/traces/{id}
+	traceID := strings.TrimPrefix(r.URL.Path, "/api/traces/")
+	if traceID == "" || traceID == "ingest" {
+		// Don't handle /api/traces/ingest here
+		http.NotFound(w, r)
+		return
+	}
+
+	if s.traceStore == nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	trace := s.traceStore.Get(traceID)
+	if trace == nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	json.NewEncoder(w).Encode(trace)
 }

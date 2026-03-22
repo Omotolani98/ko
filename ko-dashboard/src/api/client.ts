@@ -1,4 +1,4 @@
-import type { AppModel, HealthResponse, ProxyResponse } from '@/types/model';
+import type { AppModel, HealthResponse, ProxyResponse, TraceSummary, Trace } from '@/types/model';
 
 const BASE = '';
 
@@ -42,4 +42,17 @@ export async function proxyRequest(
     body: responseBody,
     duration_ms,
   };
+}
+
+export async function fetchTraces(limit = 50): Promise<TraceSummary[]> {
+  const res = await fetch(`${BASE}/api/traces?limit=${limit}`);
+  if (!res.ok) throw new Error(`Failed to fetch traces: ${res.status}`);
+  const data = await res.json();
+  return data.traces;
+}
+
+export async function fetchTrace(traceId: string): Promise<Trace> {
+  const res = await fetch(`${BASE}/api/traces/${traceId}`);
+  if (!res.ok) throw new Error(`Failed to fetch trace: ${res.status}`);
+  return res.json();
 }

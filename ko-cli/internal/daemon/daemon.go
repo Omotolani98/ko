@@ -13,6 +13,7 @@ import (
 	"github.com/Omotolani98/ko/ko-cli/internal/infra"
 	"github.com/Omotolani98/ko/ko-cli/internal/model"
 	"github.com/Omotolani98/ko/ko-cli/internal/style"
+	"github.com/Omotolani98/ko/ko-cli/internal/traces"
 	"github.com/Omotolani98/ko/ko-cli/internal/watcher"
 )
 
@@ -54,6 +55,7 @@ type Daemon struct {
 	dashServer  *dashboard.Server
 	fileWatcher *watcher.Watcher
 	socketSrv   *SocketServer
+	traceStore  *traces.TraceStore
 
 	appModel  *model.AppModel
 	modelJSON []byte
@@ -160,8 +162,9 @@ func (d *Daemon) Run(ctx context.Context) error {
 	fmt.Println(style.Info(fmt.Sprintf("Generated %s", style.Path(configPath))))
 	fmt.Println()
 
-	// Step 4: Start dashboard server
-	d.dashServer = dashboard.NewServer(modelJSON, d.appPort)
+	// Step 4: Start dashboard server (with trace store)
+	d.traceStore = traces.NewTraceStore()
+	d.dashServer = dashboard.NewServer(modelJSON, d.appPort, d.traceStore)
 	go func() {
 		if err := d.dashServer.Start(d.dashboardPort); err != nil {
 			fmt.Fprintln(os.Stderr, style.Err(fmt.Sprintf("Dashboard server error: %v", err)))
@@ -208,6 +211,7 @@ func (d *Daemon) Run(ctx context.Context) error {
 	env := []string{
 		fmt.Sprintf("KO_INFRA_CONFIG=%s", configPath),
 		fmt.Sprintf("SERVER_PORT=%d", d.appPort),
+		fmt.Sprintf("KO_DASHBOARD_PORT=%d", d.dashboardPort),
 	}
 	bootArgs := fmt.Sprintf("--args=--server.port=%d", d.appPort)
 

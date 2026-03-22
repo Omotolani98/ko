@@ -1,2 +1,3 @@
 dev.ko.runtime.config.KoAutoConfiguration
 dev.ko.runtime.config.KoFieldInjectorConfiguration
+dev.ko.runtime.tracing.KoTracingAutoConfiguration
