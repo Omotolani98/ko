@@ -1,6 +1,7 @@
 # Gradle
 .gradle/
 build/
+bin/
 !gradle/wrapper/gradle-wrapper.jar
 
 # IDE
@@ -10,6 +11,7 @@ build/
 .settings/
 .project
 .classpath
+.factorypath
 *.swp
 *.swo
 
