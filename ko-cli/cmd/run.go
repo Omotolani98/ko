@@ -110,13 +110,15 @@ func runApp(cmd *cobra.Command, args []string) error {
 		fmt.Sprintf("SERVER_PORT=%d", runPort),
 	}
 
+	bootArgs := fmt.Sprintf("--args=--server.port=%d", runPort)
+
 	// Handle graceful shutdown
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 
 	errCh := make(chan error, 1)
 	go func() {
-		errCh <- internal.RunGradle(projectDir, []string{bootTask}, env, os.Stdout, os.Stderr)
+		errCh <- internal.RunGradle(projectDir, []string{bootTask, bootArgs}, env, os.Stdout, os.Stderr)
 	}()
 
 	elapsed := time.Since(startTime).Round(time.Millisecond)
