@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/signal"
@@ -9,6 +10,7 @@ import (
 	"time"
 
 	"github.com/Omotolani98/ko/ko-cli/internal"
+	"github.com/Omotolani98/ko/ko-cli/internal/dashboard"
 	"github.com/Omotolani98/ko/ko-cli/internal/infra"
 	"github.com/Omotolani98/ko/ko-cli/internal/model"
 	"github.com/Omotolani98/ko/ko-cli/internal/style"
@@ -26,13 +28,15 @@ This is the main development command — run it and start coding.`,
 }
 
 var (
-	runPort    int
-	runModule  string
+	runPort        int
+	runModule      string
+	dashboardPort  int
 )
 
 func init() {
 	runCmd.Flags().IntVarP(&runPort, "port", "p", 8080, "HTTP port for the app")
 	runCmd.Flags().StringVarP(&runModule, "module", "m", "", "Gradle module to run (e.g., :examples:hello-world)")
+	runCmd.Flags().IntVar(&dashboardPort, "dashboard-port", 9400, "Port for the dev dashboard")
 	rootCmd.AddCommand(runCmd)
 }
 
@@ -76,7 +80,7 @@ func runApp(cmd *cobra.Command, args []string) error {
 		modelDir = filepath.Join(projectDir, modPath)
 	}
 
-	appModel, err := model.LoadAppModel(modelDir)
+	appModel, modelJSON, err := model.LoadAppModelRaw(modelDir)
 	if err != nil {
 		return fmt.Errorf("failed to load app model: %w", err)
 	}
@@ -96,7 +100,17 @@ func runApp(cmd *cobra.Command, args []string) error {
 	fmt.Println(style.Info(fmt.Sprintf("Generated %s", style.Path(configPath))))
 	fmt.Println()
 
-	// Step 4: Start the app with bootRun
+	// Step 4: Start the dev dashboard
+	dashServer := dashboard.NewServer(modelJSON, runPort)
+	go func() {
+		if err := dashServer.Start(dashboardPort); err != nil {
+			fmt.Fprintln(os.Stderr, style.Err(fmt.Sprintf("Dashboard server error: %v", err)))
+		}
+	}()
+	fmt.Println(style.Ok(fmt.Sprintf("Dashboard at %s", style.URL(fmt.Sprintf("http://localhost:%d", dashboardPort)))))
+	fmt.Println()
+
+	// Step 5: Start the app with bootRun
 	fmt.Println(style.Info("Starting Spring Boot app..."))
 	fmt.Println()
 
@@ -136,6 +150,9 @@ func runApp(cmd *cobra.Command, args []string) error {
 	case sig := <-sigCh:
 		fmt.Println()
 		fmt.Println(style.Info(fmt.Sprintf("Received %s, shutting down...", sig)))
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		dashServer.Shutdown(ctx)
 		return nil
 	}
 }

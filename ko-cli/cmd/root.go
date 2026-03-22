@@ -30,6 +30,7 @@ var rootCmd = &cobra.Command{
 
   %s
     ko run          Start your app with local infrastructure
+    ko dashboard    Open the dev dashboard in your browser
     ko build        Build a production Docker image
     ko gen model    Regenerate the application model
     ko test         Run tests with isolated infrastructure

@@ -20,3 +20,15 @@ Thumbs.db
 # Ko
 ko-app-model.json
 ko-cli/ko
+
+# Dashboard
+ko-dashboard/node_modules/
+ko-dashboard/dist/
+ko-cli/internal/dashboard/static/*
+!ko-cli/internal/dashboard/static/.gitkeep
+
+# Python
+.venv/
+*.pyc
+ko-masterclass.pptx
+generate_ko_masterclass.py

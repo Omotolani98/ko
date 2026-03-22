@@ -34,11 +34,26 @@ type ServiceModel struct {
 }
 
 type APIEndpoint struct {
-	Name         string   `json:"name"`
-	Method       string   `json:"method"`
-	Path         string   `json:"path"`
-	Auth         bool     `json:"auth"`
-	Permissions  []string `json:"permissions"`
+	Name         string    `json:"name"`
+	Method       string    `json:"method"`
+	Path         string    `json:"path"`
+	Auth         bool      `json:"auth"`
+	Permissions  []string  `json:"permissions"`
+	Expose       bool      `json:"expose"`
+	RequestType  *TypeInfo `json:"request_type"`
+	ResponseType *TypeInfo `json:"response_type"`
+	Javadoc      string    `json:"javadoc"`
+}
+
+type TypeInfo struct {
+	ClassName string      `json:"class_name"`
+	Fields    []FieldInfo `json:"fields"`
+}
+
+type FieldInfo struct {
+	Name     string `json:"name"`
+	Type     string `json:"type"`
+	Required bool   `json:"required"`
 }
 
 type DatabaseModel struct {
@@ -61,6 +76,7 @@ type CronJobModel struct {
 type PubSubTopicModel struct {
 	Name        string            `json:"name"`
 	Delivery    string            `json:"delivery"`
+	MessageType *TypeInfo         `json:"message_type"`
 	Publishers  []string          `json:"publishers"`
 	Subscribers []SubscriberModel `json:"subscribers"`
 }
@@ -81,9 +97,10 @@ type BucketModel struct {
 }
 
 type DatabaseRef struct {
-	Name     string   `json:"name"`
-	Type     string   `json:"type"`
-	Services []string `json:"services"`
+	Name       string   `json:"name"`
+	Type       string   `json:"type,omitempty"`
+	Migrations string   `json:"migrations,omitempty"`
+	Services   []string `json:"services,omitempty"`
 }
 
 type ServiceDependency struct {
@@ -91,6 +108,28 @@ type ServiceDependency struct {
 	To    string `json:"to"`
 	Type  string `json:"type"`
 	Topic string `json:"topic,omitempty"`
+}
+
+// LoadAppModelRaw reads ko-app-model.json and returns both the parsed model and raw JSON bytes.
+func LoadAppModelRaw(projectDir string) (*AppModel, []byte, error) {
+	candidates := []string{
+		filepath.Join(projectDir, "build", "resources", "main", "ko-app-model.json"),
+		filepath.Join(projectDir, "build", "classes", "java", "main", "ko-app-model.json"),
+		filepath.Join(projectDir, "ko-app-model.json"),
+	}
+
+	for _, path := range candidates {
+		data, err := os.ReadFile(path)
+		if err == nil {
+			var model AppModel
+			if err := json.Unmarshal(data, &model); err != nil {
+				return nil, nil, fmt.Errorf("failed to parse %s: %w", path, err)
+			}
+			return &model, data, nil
+		}
+	}
+
+	return nil, nil, fmt.Errorf("ko-app-model.json not found in %s (did you run ./gradlew build?)", projectDir)
 }
 
 // LoadAppModel reads and parses ko-app-model.json from the build output.
