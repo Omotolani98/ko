@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "io.github.omotolani98"
-version = "0.1.0-SNAPSHOT"
+version = rootProject.version
 
 java {
     sourceCompatibility = JavaVersion.VERSION_21
