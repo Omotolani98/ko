@@ -7,11 +7,13 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 )
 
 // Server serves the Ko dev dashboard and API endpoints.
 type Server struct {
+	mu         sync.RWMutex
 	modelJSON  []byte
 	appPort    int
 	startTime  time.Time
@@ -54,10 +56,21 @@ func (s *Server) Shutdown(ctx context.Context) error {
 	return nil
 }
 
+// UpdateModel replaces the model JSON served by the dashboard.
+// Safe to call from any goroutine.
+func (s *Server) UpdateModel(modelJSON []byte) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.modelJSON = modelJSON
+}
+
 func (s *Server) handleModel(w http.ResponseWriter, _ *http.Request) {
+	s.mu.RLock()
+	data := s.modelJSON
+	s.mu.RUnlock()
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Write(s.modelJSON)
+	w.Write(data)
 }
 
 func (s *Server) handleHealth(w http.ResponseWriter, _ *http.Request) {
