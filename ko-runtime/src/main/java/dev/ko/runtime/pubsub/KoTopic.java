@@ -1,7 +1,13 @@
 package dev.ko.runtime.pubsub;
 
+import dev.ko.runtime.tracing.KoSpan;
+import dev.ko.runtime.tracing.KoSpanCollector;
+import dev.ko.runtime.tracing.TracingContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Developer-facing pub/sub API. Each @KoPubSub field gets an instance.
@@ -21,6 +27,7 @@ public class KoTopic<T> {
 
     private final String name;
     private final KoPubSubProvider provider;
+    private volatile KoSpanCollector spanCollector;
 
     /**
      * Creates a new KoTopic.
@@ -31,6 +38,11 @@ public class KoTopic<T> {
     public KoTopic(String name, KoPubSubProvider provider) {
         this.name = name;
         this.provider = provider;
+    }
+
+    /** Set the span collector for tracing. Called by auto-configuration. */
+    public void setSpanCollector(KoSpanCollector collector) {
+        this.spanCollector = collector;
     }
 
     /**
@@ -48,6 +60,33 @@ public class KoTopic<T> {
      */
     public void publish(T message) {
         log.debug("Ko: Publishing to topic '{}': {}", name, message);
-        provider.publish(name, message);
+
+        TracingContext ctx = null;
+        long start = 0;
+        if (spanCollector != null && TracingContext.current() != null) {
+            ctx = TracingContext.childSpan();
+            start = System.currentTimeMillis();
+        }
+
+        String status = "OK";
+        try {
+            provider.publish(name, message);
+        } catch (Exception e) {
+            status = "ERROR";
+            throw e;
+        } finally {
+            if (ctx != null) {
+                long duration = System.currentTimeMillis() - start;
+                Map<String, String> attrs = new LinkedHashMap<>();
+                attrs.put("pubsub.topic", name);
+                attrs.put("pubsub.message_type", message.getClass().getSimpleName());
+                spanCollector.submit(new KoSpan(
+                        ctx.traceId(), ctx.spanId(), ctx.parentSpanId(),
+                        name, "pubsub.publish " + name, "PUBSUB_PUBLISH",
+                        start, duration, status, attrs
+                ));
+                ctx.restore();
+            }
+        }
     }
 }

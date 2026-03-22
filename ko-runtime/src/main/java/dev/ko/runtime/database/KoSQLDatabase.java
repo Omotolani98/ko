@@ -1,5 +1,8 @@
 package dev.ko.runtime.database;
 
+import dev.ko.runtime.tracing.KoSpan;
+import dev.ko.runtime.tracing.KoSpanCollector;
+import dev.ko.runtime.tracing.TracingContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +34,7 @@ public class KoSQLDatabase {
 
     private final String name;
     private final DataSource dataSource;
+    private volatile KoSpanCollector spanCollector;
 
     /**
      * Creates a new KoSQLDatabase.
@@ -41,6 +45,11 @@ public class KoSQLDatabase {
     public KoSQLDatabase(String name, DataSource dataSource) {
         this.name = name;
         this.dataSource = dataSource;
+    }
+
+    /** Set the span collector for tracing. Called by auto-configuration. */
+    public void setSpanCollector(KoSpanCollector collector) {
+        this.spanCollector = collector;
     }
 
     /**
@@ -65,6 +74,9 @@ public class KoSQLDatabase {
      * Execute a query and return all rows as a list of maps.
      */
     public List<Map<String, Object>> query(String sql, Object... params) {
+        TracingContext ctx = traceStart();
+        long start = System.currentTimeMillis();
+        String status = "OK";
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             bindParams(ps, params);
@@ -72,7 +84,10 @@ public class KoSQLDatabase {
                 return mapRows(rs);
             }
         } catch (SQLException e) {
+            status = "ERROR";
             throw new KoDatabaseException("Query failed on database '" + name + "': " + sql, e);
+        } finally {
+            traceEnd(ctx, "db.query " + name, sql, start, status);
         }
     }
 
@@ -80,6 +95,9 @@ public class KoSQLDatabase {
      * Execute a query and return the first row, or null if no results.
      */
     public Map<String, Object> queryRow(String sql, Object... params) {
+        TracingContext ctx = traceStart();
+        long start = System.currentTimeMillis();
+        String status = "OK";
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             bindParams(ps, params);
@@ -90,7 +108,10 @@ public class KoSQLDatabase {
                 return null;
             }
         } catch (SQLException e) {
+            status = "ERROR";
             throw new KoDatabaseException("Query failed on database '" + name + "': " + sql, e);
+        } finally {
+            traceEnd(ctx, "db.queryRow " + name, sql, start, status);
         }
     }
 
@@ -99,13 +120,38 @@ public class KoSQLDatabase {
      * Returns the number of affected rows.
      */
     public int exec(String sql, Object... params) {
+        TracingContext ctx = traceStart();
+        long start = System.currentTimeMillis();
+        String status = "OK";
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             bindParams(ps, params);
             return ps.executeUpdate();
         } catch (SQLException e) {
+            status = "ERROR";
             throw new KoDatabaseException("Exec failed on database '" + name + "': " + sql, e);
+        } finally {
+            traceEnd(ctx, "db.exec " + name, sql, start, status);
         }
+    }
+
+    private TracingContext traceStart() {
+        if (spanCollector == null || TracingContext.current() == null) return null;
+        return TracingContext.childSpan();
+    }
+
+    private void traceEnd(TracingContext ctx, String operation, String sql, long start, String status) {
+        if (ctx == null || spanCollector == null) return;
+        long duration = System.currentTimeMillis() - start;
+        Map<String, String> attrs = new LinkedHashMap<>();
+        attrs.put("db.name", name);
+        attrs.put("db.sql", sql.length() > 500 ? sql.substring(0, 500) : sql);
+        spanCollector.submit(new KoSpan(
+                ctx.traceId(), ctx.spanId(), ctx.parentSpanId(),
+                name, operation, "DATABASE",
+                start, duration, status, attrs
+        ));
+        ctx.restore();
     }
 
     /**

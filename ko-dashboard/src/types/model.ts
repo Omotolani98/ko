@@ -109,3 +109,37 @@ export interface ProxyResponse {
   body: string;
   duration_ms: number;
 }
+
+export interface TraceSummary {
+  trace_id: string;
+  root_service: string;
+  root_operation: string;
+  start_time_ms: number;
+  duration_ms: number;
+  status: string;
+  span_count: number;
+}
+
+export interface Trace {
+  trace_id: string;
+  root_service: string;
+  root_operation: string;
+  start_time_ms: number;
+  duration_ms: number;
+  status: string;
+  span_count: number;
+  spans: Span[];
+}
+
+export interface Span {
+  trace_id: string;
+  span_id: string;
+  parent_span_id?: string;
+  service: string;
+  operation: string;
+  kind: 'API' | 'DATABASE' | 'PUBSUB_PUBLISH' | 'PUBSUB_SUBSCRIBE' | 'SERVICE_CALL';
+  start_time_ms: number;
+  duration_ms: number;
+  status: string;
+  attributes?: Record<string, string>;
+}
