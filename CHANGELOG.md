@@ -5,6 +5,18 @@ All notable changes to the Kọ́ framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-03-22
+
+### Added
+
+- **`ko upgrade` command** — upgrades the Ko framework version in the current project. Updates plugin version, all `ko-*` dependency versions, and `gradle/libs.versions.toml` version catalog in one pass. Supports `ko upgrade` (latest from Maven Central) or `ko upgrade <version>` (specific version).
+- **Automatic migration from old IDs** — `ko upgrade` detects and migrates the old `dev.ko` plugin ID to `io.github.omotolani98.ko` and old `dev.ko:ko-*` dependency group to `io.github.omotolani98:ko-*`.
+
+### Fixed
+
+- **Gradle plugin version** — `ko-gradle-plugin` now uses the root project version instead of a hardcoded snapshot, ensuring `publishToMavenLocal` publishes the correct version.
+- **Build artifacts cleaned from repo** — removed 95 accidentally tracked `bin/` class files and `.factorypath`; added `bin/` and `.factorypath` to `.gitignore`.
+
 ## [0.4.0] - 2026-03-22
 
 ### Added
