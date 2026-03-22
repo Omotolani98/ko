@@ -5,6 +5,20 @@ All notable changes to the Kọ́ framework will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-03-22
+
+### Added
+
+- **Distributed tracing** — lightweight OTel-compatible tracing across the entire request lifecycle. `KoTracingInterceptor` automatically creates root spans for every API request. `KoSQLDatabase`, `KoTopic`, and `InProcessCaller` create child spans for database queries, pubsub publishes, and service-to-service calls respectively.
+- **Tracing context propagation** — `TracingContext` uses ThreadLocal to propagate trace/span IDs across the call chain within a request. Child spans are automatically linked to their parent.
+- **Async span collector** — `KoSpanCollector` batches spans in a `ConcurrentLinkedQueue` and flushes them every 500ms via HTTP POST to the dashboard server. Zero overhead on the hot path.
+- **Tracing auto-configuration** — `KoTracingAutoConfiguration` registers the tracing interceptor and span collector as Spring beans. Reads dashboard port from `KO_DASHBOARD_PORT` env var (default: 9400). Excludes `/actuator/**` and `/error` paths.
+- **Go trace store** — in-memory ring buffer (max 1000 traces) in the CLI dashboard server. Ingests spans from the Java runtime, groups by trace ID, computes trace duration and error status.
+- **Trace API endpoints** — `POST /api/traces/ingest` (receives spans from runtime), `GET /api/traces?limit=N` (lists recent trace summaries), `GET /api/traces/{id}` (returns full trace with all spans).
+- **Trace viewer UI** — full `TracesPage` replacing the previous stub. Auto-refreshes every 2 seconds. Shows trace list with status indicator, root operation, service name, span count, and color-coded duration (green < 100ms, amber < 500ms, red > 500ms). Click to expand inline waterfall view.
+- **Waterfall visualization** — `TraceWaterfall` component renders spans as a hierarchical tree with positioned timing bars. Color-coded by span kind: violet (API), emerald (Database), orange (PubSub), purple (Service Call). Click any span to view detailed attributes.
+- **Span detail panel** — `SpanDetail` component shows span ID, kind, service, duration, parent span, and all attributes. SQL queries are syntax-highlighted in a code block.
+
 ## [0.3.0] - 2026-03-22
 
 ### Added
