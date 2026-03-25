@@ -17,6 +17,9 @@ import org.gradle.api.tasks.compile.JavaCompile;
  */
 public class KoPlugin implements Plugin<Project> {
 
+    /** Creates a new {@code KoPlugin} instance. */
+    public KoPlugin() {}
+
     private static final String KO_GROUP = "io.github.omotolani98";
 
     @Override
