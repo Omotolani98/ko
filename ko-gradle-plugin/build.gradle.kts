@@ -10,7 +10,11 @@ plugins {
 }
 
 group = "io.github.omotolani98"
-version = rootProject.version
+version = providers.fileContents(
+    rootProject.layout.projectDirectory.file("../gradle.properties")
+).asText.map { text ->
+    text.lines().first { it.startsWith("version=") }.substringAfter("version=")
+}.get()
 
 java {
     sourceCompatibility = JavaVersion.VERSION_21
