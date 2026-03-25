@@ -9,7 +9,7 @@ import (
 
 const (
 	mavenSearchURL  = "https://central.sonatype.com/solrsearch/select?q=g:io.github.omotolani98+AND+a:ko-annotations&core=gav&rows=1&wt=json&sort=version+desc"
-	fallbackVersion = "0.5.0"
+	fallbackVersion = "0.5.1"
 )
 
 type mavenResponse struct {
