@@ -8,14 +8,14 @@ import (
 )
 
 const (
-	mavenSearchURL = "https://search.maven.org/solrsearch/select?q=g:io.github.omotolani98+AND+a:ko-annotations&rows=1&wt=json"
-	fallbackVersion = "0.1.0"
+	mavenSearchURL  = "https://central.sonatype.com/solrsearch/select?q=g:io.github.omotolani98+AND+a:ko-annotations&core=gav&rows=1&wt=json&sort=version+desc"
+	fallbackVersion = "0.5.0"
 )
 
 type mavenResponse struct {
 	Response struct {
 		Docs []struct {
-			LatestVersion string `json:"latestVersion"`
+			Version string `json:"v"`
 		} `json:"docs"`
 	} `json:"response"`
 }
@@ -40,11 +40,11 @@ func FetchLatestKoVersion() string {
 		return fallbackVersion
 	}
 
-	if len(result.Response.Docs) == 0 || result.Response.Docs[0].LatestVersion == "" {
+	if len(result.Response.Docs) == 0 || result.Response.Docs[0].Version == "" {
 		return fallbackVersion
 	}
 
-	return result.Response.Docs[0].LatestVersion
+	return result.Response.Docs[0].Version
 }
 
 // FallbackKoVersion returns the hardcoded fallback version.
@@ -72,9 +72,9 @@ func FetchLatestKoVersionOrError() (string, error) {
 		return "", fmt.Errorf("failed to parse Maven Central response: %w", err)
 	}
 
-	if len(result.Response.Docs) == 0 || result.Response.Docs[0].LatestVersion == "" {
+	if len(result.Response.Docs) == 0 || result.Response.Docs[0].Version == "" {
 		return "", fmt.Errorf("no published version found on Maven Central")
 	}
 
-	return result.Response.Docs[0].LatestVersion, nil
+	return result.Response.Docs[0].Version, nil
 }
